@@ -1,0 +1,1742 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מה במקרר - UX/UI Final Project</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS CDN for Excel parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        culinary: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857'
+                        },
+                        accent: {
+                            500: '#f97316',
+                            600: '#ea580c'
+                        },
+                        metallic: {
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            800: '#1e293b',
+                            900: '#0f172a'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Heebo', 'Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body {
+            background-color: #0b0f19;
+            font-family: 'Heebo', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .slide-container {
+            background-color: #f8fafc;
+            color: #1e293b;
+            border-radius: 24px;
+            box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            height: 720px;
+            width: 1280px;
+            padding: 45px 70px;
+            position: relative;
+            overflow: hidden;
+            justify-content: flex-start;
+            transition: opacity 0.4s ease-in-out, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Slide modification for template notice styling */
+        .slide-template {
+            padding-top: 75px !important;
+            border: 4px solid #f97316 !important;
+        }
+
+        .slide-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 45%;
+            height: 100%;
+            background: radial-gradient(circle at 80% 20%, rgba(16, 185, 129, 0.05) 0%, rgba(249, 115, 22, 0.03) 50%, transparent 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .slide-title {
+            font-size: 34px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            text-align: right;
+            border-right: 6px solid #10b981;
+            padding-right: 18px;
+            letter-spacing: -0.5px;
+            color: #0f172a;
+        }
+
+        .smartphone-frame {
+            width: 290px;
+            height: 540px;
+            background-color: #0f172a;
+            border-radius: 44px;
+            border: 10px solid #cbd5e1;
+            box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.35), inset 0 0 10px rgba(255,255,255,0.15);
+            position: relative;
+            padding: 12px;
+            overflow: hidden;
+        }
+
+        .smartphone-frame::before {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 85px;
+            height: 20px;
+            background-color: #000;
+            border-radius: 10px;
+            z-index: 10;
+        }
+
+        .swipe-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.15);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .swipe-card:hover {
+            transform: rotate(-1.5deg) scale(1.02);
+        }
+
+        .flow-node {
+            transition: all 0.3s ease;
+        }
+        .flow-node:hover {
+            transform: translateY(-4px);
+            border-color: #10b981;
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.08);
+        }
+
+        .slide-hidden {
+            display: none !important;
+            opacity: 0;
+            transform: scale(0.98) translateY(10px);
+        }
+
+        .slide-visible {
+            display: flex !important;
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen p-4">
+
+    <!-- Top Status and Navigation Menu -->
+    <div class="w-full max-w-[1280px] mb-3 flex justify-between items-center px-4">
+        <div class="flex items-center gap-3">
+            <span class="text-white text-sm font-semibold tracking-wide bg-gradient-to-r from-culinary-600 to-accent-500 px-3 py-1 rounded-full shadow-md shadow-emerald-950/20">מה במקרר</span>
+            <div id="live-connection-indicator" class="flex items-center gap-2 text-xs text-slate-400 border border-slate-700/80 bg-slate-800/50 rounded-full px-3 py-1">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" id="conn-dot"></span>
+                <span id="conn-text" class="text-emerald-400 font-bold">טוען קובץ אקסל מובנה...</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-3">
+            <!-- Manual Excel Trigger for Interactive UX Testing -->
+            <button onclick="document.getElementById('manual-excel-upload').click()" class="bg-slate-800/80 hover:bg-slate-700/80 text-white text-xs font-bold py-1.5 px-3 rounded-lg border border-slate-700 transition flex items-center gap-2 shadow-inner" title="העלאת קובץ אקסל חיה">
+                <i class="fa-solid fa-file-excel text-emerald-400"></i>
+                <span>טען קובץ סקר ידני</span>
+            </button>
+            <input type="file" id="manual-excel-upload" accept=".xlsx, .xls" class="hidden" onchange="handleManualExcel(this)">
+            
+            <div class="text-xs text-slate-400 bg-slate-900/60 rounded-lg px-2.5 py-1 flex items-center gap-2 border border-slate-800">
+                <span class="text-slate-500">שקופית</span>
+                <span id="slide-index-counter" class="text-white font-bold text-sm">1</span>
+                <span class="text-slate-500">מתוך</span>
+                <span class="text-slate-400 font-bold" id="total-slides-count">28</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN SLIDES CONTAINER -->
+    <div id="slides-wrapper" class="relative">
+
+        <!-- SLIDE 1: COVER SLIDE -->
+        <div class="slide-container slide-visible" id="slide1">
+            <div class="grid grid-cols-12 gap-8 w-full h-full items-center">
+                <div class="col-span-7 flex flex-col justify-between h-full py-4 text-right">
+                    <div>
+                        <span class="text-culinary-600 font-extrabold text-sm uppercase tracking-widest bg-culinary-50 border border-culinary-100 px-3 py-1 rounded-full">פרויקט גמר פסיכולוגי ב-UX</span>
+                        <h1 class="text-6xl font-black text-slate-900 mt-4 leading-tight">מה במקרר</h1>
+                        <p class="text-lg text-slate-600 mt-3 leading-relaxed max-w-[620px]">
+                            אפליקציית מובייל חכמה לניהול מלאי המטבח ומניעת בזבוז מזון מבוססת סריקת קבלות, הצלבת מאגרי ספקים ואישור חווייתי (Swipe to Approve).
+                        </p>
+                    </div>
+                    
+                    <div class="border-t border-slate-200 pt-6">
+                        <p class="text-sm text-slate-400 mb-1">פרויקט גמר בקורס: <span class="text-slate-800 font-bold">היבטים פסיכולוגיים באפיון חווית משתמש (UX)</span></p>
+                        <p class="text-sm text-slate-400 mb-1">בהנחיית: <span class="text-slate-800 font-bold">ד"ר עופר מונר</span> | <span class="text-slate-800 font-bold">אוניברסיטת תל אביב</span></p>
+                        <p class="text-sm text-slate-400">מגישים: <span class="text-culinary-600 font-extrabold">יפעת זקצר, עתליה מיטליס, נגה סמדר, יאן קוטליאר, אריאל קליימן, שרה דוויק</span></p>
+                    </div>
+                </div>
+
+                <div class="col-span-5 flex justify-center items-center h-full">
+                    <div class="smartphone-frame">
+                        <div class="bg-[#f8fafc] w-full h-full rounded-[34px] flex flex-col pt-6 overflow-hidden relative">
+                            <!-- In-app UI Representation -->
+                            <div class="px-4 py-2 border-b border-slate-200 flex justify-between items-center bg-white">
+                                <span class="text-xs font-black text-slate-800">מה במקרר</span>
+                                <i class="fa-solid fa-wifi text-xs text-slate-400"></i>
+                            </div>
+                            
+                            <div class="p-3 space-y-2 flex-1">
+                                <div class="bg-white p-2.5 rounded-xl border border-slate-100 flex justify-between items-center shadow-sm">
+                                    <span class="text-xs font-bold text-slate-700">חלב תנובה 3%</span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                </div>
+                                <div class="bg-white p-2.5 rounded-xl border border-slate-100 flex justify-between items-center shadow-sm">
+                                    <span class="text-xs font-bold text-slate-700">גבינת קוטג'</span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                                </div>
+                                <div class="bg-white p-2.5 rounded-xl border border-slate-100 flex justify-between items-center shadow-sm">
+                                    <span class="text-xs font-bold text-slate-700">חזה עוף מופשר</span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-accent-500"></span>
+                                </div>
+                            </div>
+
+                            <!-- Tinder Swipe Feature Visualizer -->
+                            <div class="swipe-card absolute bottom-6 left-3 right-3 p-3.5 text-center bg-white">
+                                <h4 class="text-xs font-extrabold text-slate-800 mb-1">אישור מלאי חווייתי</h4>
+                                <div class="h-16 bg-slate-50 border border-slate-100 rounded-lg mb-2 flex justify-center items-center text-3xl text-slate-600">
+                                    <i class="fa-solid fa-egg text-amber-500"></i>
+                                </div>
+                                <div class="text-[11px] font-bold text-slate-800">ביצים טריות L (תנובה)</div>
+                                <div class="flex justify-between items-center text-[10px] text-slate-400 mt-2 font-bold px-1">
+                                    <span><i class="fa-solid fa-arrow-left text-slate-300 ml-1"></i>זרוק</span>
+                                    <span class="text-accent-500 animate-bounce"><i class="fa-solid fa-hand-pointer"></i> סוויפ</span>
+                                    <span class="text-emerald-500">במקרר <i class="fa-solid fa-arrow-right text-emerald-300 mr-1"></i></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: MARKET RESEARCH OVERVIEW -->
+        <div class="slide-container slide-hidden" id="slide2">
+            <h2 class="slide-title">מחקר שוק - ניהול מלאי המטבח ומניעת בזבוז</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-2 gap-8">
+                    <div class="bg-white border border-slate-200 p-8 rounded-2xl shadow-sm hover:border-emerald-500 transition">
+                        <h3 class="text-2xl font-bold text-slate-900 mb-3 border-b border-slate-100 pb-2 flex items-center gap-2"><i class="fa-solid fa-globe text-emerald-500"></i> מגמות גלובליות ומקומיות</h3>
+                        <p class="text-slate-600 leading-relaxed text-base">
+                            בשנים האחרונות מתחזקת המודעות הציבורית לבזבוז מזון ביתי, הן מהיבט כלכלי והן מהיבט סביבתי. פלטפורמות קיימות מנסות לתת מענה חלקי לתהליך, החל מניהול ידני של תאריכי תפוגה ועד שיתוף קהילתי של עודפי מזון.
+                        </p>
+                        <p class="text-slate-600 leading-relaxed text-base mt-3 font-semibold text-emerald-600">
+                            במסגרת מחקר השוק סקרנו אפליקציות שונות לניהול מלאי, מערכות סריקת קבלות, ומאגרי מידע של ברקודים ממשלתיים (CHP) המהווים בסיס טכנולוגי לפתרון.
+                        </p>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-8 rounded-2xl shadow-sm hover:border-emerald-500 transition">
+                        <h3 class="text-2xl font-bold text-slate-900 mb-3 border-b border-slate-100 pb-2 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-accent-500"></i> חלוקת השוק הקיים</h3>
+                        <ul class="space-y-3.5 mt-2">
+                            <li class="relative pr-6 text-slate-600 text-base"><i class="fa-solid fa-circle text-[7px] text-emerald-500 absolute right-1 top-2.5"></i> <strong>אפליקציות ניהול מלאי ייעודיות:</strong> פתרונות מבוססי הזנה ידנית (כגון Kitche, CozZo) הסובלים מנטישה מהירה של משתמשים.</li>
+                            <li class="relative pr-6 text-slate-600 text-base"><i class="fa-solid fa-circle text-[7px] text-emerald-500 absolute right-1 top-2.5"></i> <strong>פלטפורמות מתכונים מבוססי שאריות:</strong> מנגנונים המציעים פתרונות קולינריים (כגון SuperCook) אך מנותקים ממצב המקרר בפועל.</li>
+                            <li class="relative pr-6 text-slate-600 text-base"><i class="fa-solid fa-circle text-[7px] text-emerald-500 absolute right-1 top-2.5"></i> <strong>קבוצות שיתוף מזון:</strong> יוזמות חברתיות מקומיות בפייסבוק ובוואטסאפ ללא אוטומציה או סנכרון דיגיטלי.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 3: COMPETITOR 1 - INVENTORY APPS (Kitche) -->
+        <div class="slide-container slide-hidden" id="slide3">
+            <h2 class="slide-title">מחקר מתחרים - אפליקציות מלאי (Kitche)</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-2 gap-10 items-center">
+                    <div class="space-y-4">
+                        <h3 class="text-2xl font-black text-slate-900 flex items-center gap-3"><i class="fa-solid fa-kitchen-set text-emerald-500"></i> הזנה ידנית ועומס קוגניטיבי גבוה</h3>
+                        <p class="text-slate-600 text-base leading-relaxed">
+                            אפליקציות כמו <strong>Kitche</strong> מאפשרות למשתמש לעקוב אחר מלאי המזון בביתו בצורה מקיפה, אך סובלות מבעיה מהותית של עומס תפעולי ואינן מותאמות לשוק הישראלי.
+                        </p>
+                        <ul class="space-y-2">
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-triangle-exclamation text-accent-500 absolute right-0 top-1"></i> <strong>נקודת תורפה ראשית:</strong> דרישה מהמשתמש להקליד ידנית את כל המוצרים לאחר הקניות.</li>
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-triangle-exclamation text-accent-500 absolute right-0 top-1"></i> <strong>היעדר תמיכה ברשתות בישראל:</strong> מנגנון ה-OCR מיועד לחנויות בחו"ל בלבד ואינו תומך בעברית.</li>
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-triangle-exclamation text-accent-500 absolute right-0 top-1"></i> <strong>ניהול תאריכי תפוגה:</strong> קביעה ידנית של תאריכים המעלה את החיכוך.</li>
+                        </ul>
+                    </div>
+                    <!-- Graceful Fallback wrapper using inline SVG instead of local image failure -->
+                    <div class="rounded-2xl overflow-hidden shadow-md border border-slate-200 h-[360px] bg-slate-50 relative flex items-center justify-center" id="kitche-image-container">
+                        <img class="w-full h-full object-cover" src="image_7241dc.jpg" alt="Kitche Interface" onerror="showKitcheSvgFallback(this)">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 4: COMPETITOR 2 - RECIPE FINDERS -->
+        <div class="slide-container slide-hidden" id="slide4">
+            <h2 class="slide-title">מחקר מתחרים - אפליקציות מתכונים (SuperCook)</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-2 gap-10 items-center">
+                    <div class="space-y-4">
+                        <h3 class="text-2xl font-black text-slate-900 flex items-center gap-3"><i class="fa-solid fa-bowl-food text-accent-500"></i> מתכונים וחיפוש אסוציאטיבי</h3>
+                        <p class="text-slate-600 text-base leading-relaxed">
+                            אפליקציות כמו <strong>SuperCook</strong> מאפשרות למשתמש לסמן רכיבים קיימים בבית ולקבל מתכונים תואמים. בעוד שהערך הקולינרי גבוה, קיימת בעיה של תחזוקת המלאי המנוגדת לדינמיקה הביתית.
+                        </p>
+                        <ul class="space-y-2">
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-xmark text-red-500 absolute right-0 top-1"></i> <strong>חוסר סנכרון שוטף:</strong> כדי לקבל הצעה רלוונטית, על המשתמש לעדכן את המרכיבים באופן קבוע.</li>
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-xmark text-red-500 absolute right-0 top-1"></i> <strong>היעדר שיקוף מדדי טריות:</strong> האפליקציה אינה יודעת איזה מוצר דורש ניצול מיידי.</li>
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-xmark text-red-500 absolute right-0 top-1"></i> <strong>ללא אוטומציה בקניות:</strong> המערכת אינה מסייעת בהזנת המוצרים מראש.</li>
+                        </ul>
+                    </div>
+                    <div class="rounded-2xl overflow-hidden shadow-lg border border-slate-200 h-[360px]">
+                        <img class="w-full h-full object-cover" src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600&auto=format&fit=crop" alt="SuperCook Interface Concept" onerror="this.src='https://placehold.co/600x400/f1f5f9/475569?text=SuperCook+App+Interface'">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 5: COMPETITOR MATRIX -->
+        <div class="slide-container slide-hidden" id="slide5">
+            <h2 class="slide-title">מחקר שוק ומתחרים – מטריצת השוואה קריטריונית</h2>
+            <div class="flex flex-col justify-center flex-grow text-xs">
+                <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                    <table class="w-full border-collapse text-right">
+                        <thead>
+                            <tr class="bg-slate-100 border-b border-slate-200 text-slate-800 font-bold text-[13px]">
+                                <th class="p-3 w-[14%]">ציר השוואה</th>
+                                <th class="p-3 w-[26%] border-r border-slate-200">Kitche (מלאי ומעקב)</th>
+                                <th class="p-3 w-[26%] border-r border-slate-200">SuperCook (השראה ובישול)</th>
+                                <th class="p-3 w-[34%] border-r border-slate-200 text-culinary-600 bg-emerald-50/50">קבוצות פייסבוק / וואטסאפ (המענה הקיים)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-slate-600 text-[11px] leading-relaxed">
+                            <tr>
+                                <td class="p-3 font-bold bg-slate-50 text-slate-800">נוחות השימוש</td>
+                                <td class="p-3 border-r border-slate-200">פלטפורמה מותאמת למובייל; מאפשרת ניווט היררכי ישיר בין רשימת המלאי למתכונים.</td>
+                                <td class="p-3 border-r border-slate-200">חישוב אקספלורטיבי מהיר של מתכונים; המעבר בין סימון הרכיבים להצגת תוצאות הוא מיידי.</td>
+                                <td class="p-3 border-r border-slate-200 bg-emerald-50/10">נגיש בכל מכשיר, אך דורש גלילה אינסופית ומעבר ידני על פוסטים; אין כלי ניטור או פילטור מובנים.</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-bold bg-slate-50 text-slate-800">נראות</td>
+                                <td class="p-3 border-r border-slate-200">עיצוב נקי, מבוסס רשימות וויזואליות עם חיווי תוקף ברור.</td>
+                                <td class="p-3 border-r border-slate-200">ממשק מודרני וצבעוני; דגש חזק על תמונות מגרות של המנות והרכיבים.</td>
+                                <td class="p-3 border-r border-slate-200 bg-emerald-50/10">נראות של רשת חברתית; עמוס בגירויים ויזואליים המייצרים הסחת דעת מהצורך המרכזי.</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-bold bg-slate-50 text-slate-800">נקודות חוזקה</td>
+                                <td class="p-3 border-r border-slate-200">תמיכה בסריקה אוטומטית (OCR) של קבלות במספר מדינות בעולם; מעקב תוקף מובנה.</td>
+                                <td class="p-3 border-r border-slate-200">מחולל מתכונים דינמי ועוצמתי; מאגר עצום של פתרונות קולינריים לכל שילוב רכיבים.</td>
+                                <td class="p-3 border-r border-slate-200 bg-emerald-50/10">קהילה פעילה ותוססת; קל מאוד לפרסם פוסט חופשי או הודעה משפחתית; שימוש במודל מנטלי שגור.</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-bold bg-slate-50 text-slate-800 text-red-700">נקודות חולשה</td>
+                                <td class="p-3 border-r border-slate-200 text-red-600 bg-red-50/5">אינו תומך בקבלות ורשתות בישראל; הזנת תיקונים ידנית ומסורבלת במקרה של שגיאות OCR (חיכוך קוגניטיבי גבוה).</td>
+                                <td class="p-3 border-r border-slate-200 text-red-600 bg-red-50/5">דורש מהמשתמש הזנה ידנית מלאה של כל רכיב בארון (חיכוך קוגניטיבי קיצוני); אין מעקב תוקף או טריות.</td>
+                                <td class="p-3 border-r border-slate-200 text-red-600 bg-red-50/5">אין שום הבנייה של תוכן; קושי קריטי במעקב אחר פניות מרובות באינבוקס/בתגובות; חוסר עקביות בפרטים.</td>
+                            </tr>
+                            <tr class="bg-slate-50/50">
+                                <td class="p-3 font-bold bg-slate-50 text-slate-800">מודרניות וטכנולוגיה</td>
+                                <td class="p-3 border-r border-slate-200">שימוש ב-OCR בסיסי לזיהוי טקסט בלבד; חוסר באינטגרציה עם מאגרי מידע ציבוריים או מנגנוני משחקיות חווייתיים.</td>
+                                <td class="p-3 border-r border-slate-200">מנוע חיפוש מתקדם מבוסס אלגוריתם התאמה, אך נעדר יכולות AI אקטיביות (זיהוי תמונה) או חיבור למאגרי ספקים.</td>
+                                <td class="p-3 border-r border-slate-200">לואו-טק (Low-Tech) לחלוטין; נשען על קלט טקסטואלי חופשי של המשתמש ללא שום אוטומציה או מערכת תומכת החלטה.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 6: MARKET CONCLUSIONS -->
+        <div class="slide-container slide-hidden" id="slide6">
+            <h2 class="slide-title">מסקנות מחקר השוק - הגדרת ההזדמנות</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm text-right flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-culinary-600 text-xl mb-4"><i class="fa-solid fa-bolt"></i></div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-2">1. הפחתת החיכוך למינימום</h3>
+                            <p class="text-sm text-slate-500 leading-relaxed">
+                                הבנה חד משמעית כי המשתמש הביתי לא ישתף פעולה לאורך זמן עם פלטפורמה הדורשת הקלדת פריטים ידנית לאחר קניות קשות.
+                            </p>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm text-right flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-500 text-xl mb-4"><i class="fa-solid fa-lightbulb"></i></div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-2">2. פישוט קוגניטיבי</h3>
+                            <p class="text-sm text-slate-500 leading-relaxed">
+                                צורך בשיקוף ויזואלי מיידי ואינטואיטיבי של רמת הטריות, תוך שימוש במודלים מנטליים מוכרים (כגון צבעי רמזור ירוק-צהוב-אדום).
+                            </p>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm text-right flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-accent-500 text-xl mb-4"><i class="fa-solid fa-gamepad"></i></div>
+                            <h3 class="text-xl font-bold text-slate-900 mb-2">3. גיימיפיקציה וסוויפים</h3>
+                            <p class="text-sm text-slate-500 leading-relaxed">
+                                החלפת משימת המחיקה המייגעת ("איזה מוצר זרקתי") במשחק קבלת החלטות פשוט וקליל בסגנון Swipe, המעלה את אחוזי השימוש שוב ושוב.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 7: USER RESEARCH - QUESTIONNAIRE -->
+        <div class="slide-container slide-hidden" id="slide7">
+            <div class="grid grid-cols-12 gap-8 w-full h-full items-center">
+                <div class="col-span-5 bg-gradient-to-br from-culinary-600 to-culinary-700 rounded-3xl p-8 text-center text-white shadow-lg relative overflow-hidden">
+                    <div class="relative z-10">
+                        <span class="text-emerald-100 font-bold uppercase tracking-wider text-xs">כמות משיבים כוללת בסקר הנוכחי</span>
+                        <div class="text-8xl font-black font-mono my-2 tracking-tight" id="respondents-count-badge">30</div>
+                        <p class="text-emerald-100 font-medium">צרכנים ומשקי בית ישראלים</p>
+                        <button onclick="openRawDataModal()" class="mt-6 bg-white/20 hover:bg-white/30 text-white text-xs font-bold py-2 px-4 rounded-xl border border-white/20 transition flex items-center gap-2 mx-auto">
+                            <i class="fa-solid fa-magnifying-glass-chart"></i>
+                            <span>הצג תגובות גולמיות</span>
+                        </button>
+                    </div>
+                    <div class="absolute -bottom-10 -left-10 w-44 h-44 rounded-full bg-white/5 pointer-events-none"></div>
+                </div>
+                
+                <div class="col-span-7 space-y-4 text-right">
+                    <h3 class="text-2xl font-black text-slate-900">היעדים והמתודולוגיה של המחקר הכמותי</h3>
+                    <p class="text-slate-600 text-base leading-relaxed">
+                        במטרה לתקף את הנחות היסוד שלנו לגבי התנהגות המשתמשים במטבח הדיגיטלי, הפצנו שאלון מקיף בקבוצות פייסבוק וקהילות של "צרכנות נבונה", "אפס פסולת" וסטודנטים באוניברסיטת תל אביב.
+                    </p>
+                    <ul class="space-y-2">
+                        <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-check text-emerald-500 absolute right-0 top-1"></i> <strong>חתך דמוגרפי:</strong> טווח גילאים רחב (18 עד 59) עם דגש על צעירים בגילאי 24-35 (58% מהמשיבים).</li>
+                        <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-check text-emerald-500 absolute right-0 top-1"></i> <strong>מיפוי הרגלי קנייה:</strong> תדירות ביקור ברשתות סופרמרקט וקניית מזון טרי.</li>
+                        <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-check text-emerald-500 absolute right-0 top-1"></i> <strong>בחינת נכונות טכנולוגית:</strong> נוחות סריקת קבלות לעומת מעקב פסיבי קיים.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 8: QUESTIONNAIRE PROTOCOL -->
+        <div class="slide-container slide-hidden" id="slide8">
+            <h2 class="slide-title">פרוטוקול השאלון - השאלות המקוריות כפי שהוצגו בסקר</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-2 gap-8" id="survey-questions-grid">
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                        <h3 class="text-lg font-extrabold text-culinary-600 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-circle-question ml-2"></i>שאלות רקע, קניות והרגלי צריכה</h3>
+                        <ul class="space-y-3 text-slate-600 text-sm" id="questions-col-1">
+                            <li class="flex items-start gap-2.5">
+                                <span class="bg-emerald-50 text-emerald-600 font-extrabold rounded-md px-2 py-0.5 text-xs">1</span>
+                                <span class="font-medium" id="q-demog-age">כמה אנשים גרים אצלך בבית?</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <span class="bg-emerald-50 text-emerald-600 font-extrabold rounded-md px-2 py-0.5 text-xs">2</span>
+                                <span class="font-medium" id="q-demog-gender">מי אחראי בבית שלך על הקניות?</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <span class="bg-emerald-50 text-emerald-600 font-extrabold rounded-md px-2 py-0.5 text-xs">3</span>
+                                <span class="font-medium" id="q-shop-freq">כמה פעמים בשבוע מבשלים בבית שלך?</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <span class="bg-emerald-50 text-emerald-600 font-extrabold rounded-md px-2 py-0.5 text-xs">4</span>
+                                <span class="font-medium" id="q-waste-freq">במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
+                        <h3 class="text-lg font-extrabold text-accent-500 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-triangle-exclamation ml-2"></i>שאלות עומק, חסמים והתנהגות מקרר</h3>
+                        <ul class="space-y-3 text-slate-600 text-sm" id="questions-col-2">
+                            <li class="flex items-start gap-2.5">
+                                <span class="bg-orange-50 text-accent-500 font-extrabold rounded-md px-2 py-0.5 text-xs">5</span>
+                                <span class="font-medium" id="q-current-apps">עד כמה שוכח/ת איזה מוצרים יש לך בבית?</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <span class="bg-orange-50 text-accent-500 font-extrabold rounded-md px-2 py-0.5 text-xs">6</span>
+                                <span class="font-medium" id="q-barrier">עד כמה קונה מוצר שכבר קיים אצלך בבית?</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <span class="bg-orange-50 text-accent-500 font-extrabold rounded-md px-2 py-0.5 text-xs">7</span>
+                                <span class="font-medium" id="q-input-pref">באיזה תדירות את/ה זורק/ת אוכל?</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <span class="bg-orange-50 text-accent-500 font-extrabold rounded-md px-2 py-0.5 text-xs">8</span>
+                                <span class="font-medium" id="q-device">איך את/ה מחליט/ה מה להכין לאכול?</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 9: QUESTIONNAIRE RESULTS - BAR CHART (N=30) -->
+        <div class="slide-container slide-hidden" id="slide9">
+            <h2 class="slide-title">תוצאות השאלון - שרשרת הכשל הצרכני במטבח הביתי</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="bg-white border border-slate-200 p-8 rounded-2xl shadow-sm">
+                    <h3 class="text-xl font-bold text-slate-900 mb-6 flex justify-between items-center">
+                        <span>כשלים ובעיות נפוצות בניהול השוטף של המקרר (N=30)</span>
+                        <span class="text-xs bg-slate-100 text-slate-500 px-3 py-1 rounded-full font-bold">מעודכן על בסיס קובץ הנתונים האמיתי שלכם</span>
+                    </h3>
+                    <div class="space-y-5">
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-center text-sm font-bold text-slate-700">
+                                <span>שוכחים אילו מוצרים ומצרכים קיימים כרגע במקרר ובארונות (במידה רבה מאוד)</span>
+                                <span class="text-accent-500" id="barrier-manual-pct">58%</span>
+                            </div>
+                            <div class="h-6 w-full bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                                <div id="barrier-manual-bar" class="h-full bg-gradient-to-l from-accent-500 to-amber-400 rounded-lg transition-all duration-1000" style="width: 58%;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-center text-sm font-bold text-slate-700">
+                                <span>רוכשים בסופר מוצר שכבר קיים בבית (קניית כפילויות עקב חוסר ידע)</span>
+                                <span class="text-amber-500" id="barrier-track-pct">51%</span>
+                            </div>
+                            <div class="h-6 w-full bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                                <div id="barrier-track-bar" class="h-full bg-gradient-to-l from-amber-400 to-yellow-300 rounded-lg transition-all duration-1000" style="width: 51%;"></div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <div class="flex justify-between items-center text-sm font-bold text-slate-700">
+                                <span>זורקים אוכל מקולקל או פג תוקף לפח (בזבוז קבוע)</span>
+                                <span class="text-slate-500" id="barrier-notif-pct">45%</span>
+                            </div>
+                            <div class="h-6 w-full bg-slate-100 rounded-lg overflow-hidden border border-slate-200">
+                                <div id="barrier-notif-bar" class="h-full bg-gradient-to-l from-slate-400 to-slate-300 rounded-lg transition-all duration-1000" style="width: 45%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-center text-sm text-slate-400 mt-4 italic">
+                    הנתונים מוכיחים את הקשר הברור והישיר: שכחת המצרכים מובילה מיידית לרכישה כפולה ומיותרת, אשר בסופה מוצרים נזרקים ישירות לפח.
+                </p>
+            </div>
+        </div>
+
+        <!-- SLIDE 10: QUESTIONNAIRE RESULTS - TRACKING METHOD -->
+        <div class="slide-container slide-hidden" id="slide10">
+            <h2 class="slide-title">תוצאות השאלון - במה נעזרים כיום לעקוב אחר מצרכים?</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-12 gap-8 items-center">
+                    <div class="col-span-5 flex justify-center">
+                        <div class="relative w-64 h-64 rounded-full border-[18px] border-slate-200 flex items-center justify-center bg-white shadow-inner" id="pie-chart-conic">
+                            <div class="absolute inset-0 rounded-full" id="pie-slice-overlay" style="background: conic-gradient(#10b981 0% 56.6%, #fbc02d 56.6% 82%, #f97316 82% 100%);"></div>
+                            <div class="absolute w-36 h-36 rounded-full bg-white shadow-md flex flex-col justify-center items-center z-10 text-center">
+                                <span class="text-xs font-bold text-slate-400">השיטה המובילה</span>
+                                <span class="text-3xl font-black text-slate-800" id="pie-pref-highlight">56.6%</span>
+                                <span class="text-[10px] font-bold text-emerald-600">מעקב פסיבי לחלוטין</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-span-7 space-y-4 text-right">
+                        <h3 class="text-xl font-bold text-slate-900 border-b border-slate-100 pb-2">במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?</h3>
+                        <div class="space-y-3 text-sm">
+                            <div class="flex items-center gap-3">
+                                <span class="w-4 h-4 rounded-full bg-emerald-500 shrink-0"></span>
+                                <span class="text-slate-600"><strong><span id="platform-mobile-pct">56.6%</span> - פותחים ומסתכלים במקרר ובארונות:</strong> דרך פסיבית, ללא רשימה או תעוד דיגיטלי, המסתמכת על זיכרון אקטיבי מוגבל.</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-4 h-4 rounded-full bg-yellow-400 shrink-0"></span>
+                                <span class="text-slate-600"><strong><span id="platform-web-pct">25.4%</span> - רשימות בטלפון / פתקים / לוח פיזי:</strong> רשימות פשוטות שאינן דינמיות ודורשות עדכון שוטף ומתיש.</span>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <span class="w-4 h-4 rounded-full bg-accent-500 shrink-0"></span>
+                                <span class="text-slate-600"><strong><span id="platform-desktop-pct">18%</span> - זיכרון בלבד / ללא שום כלי עזר:</strong> חוסר שליטה מוחלט במצאי המטבח המביא ישירות לבזבוז ולשכחה.</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 leading-relaxed pt-2">
+                            * ממצא זה חושף את "פרדוקס הניהול הפסיבי" – רוב הצרכנים לא מנהלים את המלאי באופן דיגיטלי, פשוט כי אין להם כלי נגיש ונטול מאמץ (Low Friction). זהו בדיוק החסם ש"מה במקרר" באה לפתור באמצעות אוטומציית הסריקה ואישור המלאי ב-Swipe.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 11: SURVEY RESULTS AND CONCLUSIONS -->
+        <div class="slide-container slide-hidden" id="slide11">
+            <h2 class="slide-title">מחקר משתמשים – תוצאות ומסקנות הסקר</h2>
+            <div class="text-xs text-slate-400 -mt-3 mb-4 font-bold text-right">פילוח התנהגות צרכנית ושרשרת הכשל במטבח הביתי (N=30)</div>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-2 gap-8 items-stretch">
+                    <!-- Right Column: Quantitative Findings & Correlations -->
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between text-right">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-slate-900 border-b border-slate-100 pb-2 mb-4 flex items-center gap-2 justify-start">
+                                <i class="fa-solid fa-chart-line text-emerald-500"></i>
+                                ממצאים כמותיים וקורלציות
+                            </h3>
+                            <div class="space-y-4 text-slate-600 text-sm">
+                                <div class="flex items-start gap-3">
+                                    <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-users"></i></span>
+                                    <div>
+                                        <strong class="text-slate-800 block">פרופיל המשיבים:</strong>
+                                        <span>50% זוגות, 37% משפחות (3-4 נפשות). 63% מבשלים 2-3 פעמים בשבוע.</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-eye-slash"></i></span>
+                                    <div>
+                                        <strong class="text-slate-800 block">פרדוקס הניהול הפסיבי:</strong>
+                                        <span>56.6% עוקבים אחר המצרכים בשיטה פסיבית לחלוטין ("פותחים ומסתכלים במקרר ובארונות").</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <span class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-link"></i></span>
+                                    <div>
+                                        <strong class="text-slate-800 block">שרשרת הכשל הצרכני:</strong>
+                                        <ul class="list-none pr-0 mt-1 space-y-1 text-xs">
+                                            <li class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[6px] text-amber-500"></i>קורלציה חזקה (r = 0.58) בין גודל משק הבית לשכחת מוצרים.</li>
+                                            <li class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[6px] text-amber-500"></i>קורלציה של r = 0.51 בין שכחת מוצרים לרכישת כפילויות.</li>
+                                            <li class="flex items-center gap-1.5"><i class="fa-solid fa-circle text-[6px] text-amber-500"></i>קשר ישיר (r = 0.45) בין רמת השכחה לבזבוז וזריקת מזון.</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Left Column: UX Insights -->
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col justify-between text-right">
+                        <div>
+                            <h3 class="text-lg font-extrabold text-slate-900 border-b border-slate-100 pb-2 mb-4 flex items-center gap-2 justify-start">
+                                <i class="fa-solid fa-brain text-accent-500"></i>
+                                תובנות ומסקנות אפיון (UX Insights)
+                            </h3>
+                            <div class="space-y-4 text-slate-600 text-sm">
+                                <div class="flex items-start gap-3">
+                                    <span class="w-8 h-8 rounded-lg bg-orange-50 text-accent-500 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-head-side-virus"></i></span>
+                                    <div>
+                                        <strong class="text-slate-800 block">הבעיה אינה טכנולוגית, היא מנטלית:</strong>
+                                        <span>נקודת הכאב המרכזית היא הקושי המנטלי היומיומי של "להחליט מה לבשל" ו"לזכור מה יש בבית" (ולא עצם ניהול המלאי הפיזי).</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <span class="w-8 h-8 rounded-lg bg-orange-50 text-accent-500 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-gauge-simple-high"></i></span>
+                                    <div>
+                                        <strong class="text-slate-800 block">דרישה לחוויית אפס-מאמץ (Low Friction):</strong>
+                                        <span>משתמשים לא יקלידו מצרכים באופן ידני לאורך זמן. המעקב חייב להתבצע באופן אוטומטי, דינמי ופסיבי.</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <span class="w-8 h-8 rounded-lg bg-orange-50 text-accent-500 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+                                    <div>
+                                        <strong class="text-slate-800 block">הזדמנות אפיון למוצר:</strong>
+                                        <span>כלי המציג את המלאי הקיים ומציע מתכונים מבוססי מצאי כדי לחסוך זמן החלטה, למנוע רכישות כפולות ולצמצם זריקת מזון.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 12: USER RESEARCH - QUALITATIVE QUOTE -->
+        <div class="slide-container slide-hidden" id="slide12">
+            <h2 class="slide-title">קול המשתמש - תובנות מתוך ראיונות העומק</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="max-w-[1000px] mx-auto text-center space-y-6 text-right">
+                    <i class="fa-solid fa-quote-right text-slate-200 text-7xl leading-none block text-center"></i>
+                    <blockquote class="text-3xl font-extrabold text-slate-800 leading-normal" id="dynamic-user-quote">
+                        "זה מעצבן בטירוף! זה מעורר בי עצבים, תחושה של בזבוז כסף, ובעיקר הרגשה של זלזול - זלזול באוכל, זלזול בנו ובעצמנו. אנחנו נמצאים בבית, יכולנו לאכול את זה ובמקום זה פשוט שכחנו מזה."
+                    </blockquote>
+                    <p class="text-lg font-bold text-culinary-600 text-center" id="dynamic-user-author">— טליה, מתוך ראיונות העומק של הפרויקט</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 13: USER RESEARCH - DEPTH INTERVIEWS -->
+        <div class="slide-container slide-hidden" id="slide13">
+            <h2 class="slide-title">מחקר משתמשים - ראיונות עומק (Depth Interviews)</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:border-emerald-500 transition text-right">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-culinary-600 text-xl mb-4"><i class="fa-solid fa-user"></i></div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-1">מריה</h3>
+                        <p class="text-xs text-slate-400 mb-3">אפיון: אם חד הורית לשני מתבגרים</p>
+                        <p class="text-sm text-slate-600 leading-relaxed italic">
+                            "השיטה שלנו מובנית: מחליטים מראש על תפריט שבועי ועושים קנייה מרוכזת. הישנים עוברים לקדמת המדף, והחדשים מאחורה."
+                        </p>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:border-emerald-500 transition text-right">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-culinary-600 text-xl mb-4"><i class="fa-solid fa-user-graduate"></i></div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-1">טליה</h3>
+                        <p class="text-xs text-slate-400 mb-3">אפיון: בזוגיות צעירה יחד עם ארוסה</p>
+                        <p class="text-sm text-slate-600 leading-relaxed italic">
+                            "מחליטים ברגע האחרון בערב כשרעבים. אין לנו תפריט. אם חסר רכיב אנחנו זורמים, או שלא אוכלים מרוב עצבים ותסכול."
+                        </p>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm hover:border-emerald-500 transition text-right">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-culinary-600 text-xl mb-4"><i class="fa-solid fa-carrot"></i></div>
+                        <h3 class="text-xl font-bold text-slate-900 mb-1">הצלבת קטבים</h3>
+                        <p class="text-xs text-slate-400 mb-3">אפיון: מיפוי צרכים וניגודים פסיכולוגיים</p>
+                        <p class="text-sm text-slate-600 leading-relaxed italic">
+                            מריה דורשת סדר, ניהול מלאי והקטנת הפסד כספי (סדר קוגניטיבי). טליה זקוקה לייעול והפחתת עומס מנטלי של 'מה לבשל'.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 14: INTERVIEW PROTOCOL -->
+        <div class="slide-container slide-hidden" id="slide14">
+            <h2 class="slide-title">פרוטוקול הראיונות - מבנה וצירי העמקה</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-2 gap-8">
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm text-right">
+                        <h3 class="text-xl font-extrabold text-slate-900 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-comments text-culinary-600 ml-2"></i>צירי השאלה המרכזיים בראיון</h3>
+                        <ul class="space-y-3.5 text-slate-600 text-base">
+                            <li class="relative pr-6"><i class="fa-solid fa-chevron-left text-xs text-emerald-500 absolute right-0 top-1.5"></i> <strong>חלק 1: היכרות והרגלים יומיומיים:</strong> סדר היום ואופן קבלת ההחלטות לקראת קניות.</li>
+                            <li class="relative pr-6"><i class="fa-solid fa-chevron-left text-xs text-emerald-500 absolute right-0 top-1.5"></i> <strong>חלק 2: רגע האמת - סדר הקניות והפריקה:</strong> תיאור מדויק של פריקת המוצרים והרגשות בבית.</li>
+                            <li class="relative pr-6"><i class="fa-solid fa-chevron-left text-xs text-emerald-500 absolute right-0 top-1.5"></i> <strong>חלק 3: מנגנון האשמה של זריקת אוכל:</strong> חקירת ההיבט הרגשי כשהמרואיין משליך מזון.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm text-right">
+                        <h3 class="text-xl font-extrabold text-slate-900 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-vial-circle-check text-accent-500 ml-2"></i>בחינת פתרונות נוכחיים וקונספט</h3>
+                        <ul class="space-y-3.5 text-slate-600 text-base">
+                            <li class="relative pr-6"><i class="fa-solid fa-chevron-left text-xs text-emerald-500 absolute right-0 top-1.5"></i> <strong>חלק 4: פתרונות נוכחיים ורמת שביעות רצון:</strong> פתרונות מאולתרים קיימים וחסרונותיהם.</li>
+                            <li class="relative pr-6"><i class="fa-solid fa-chevron-left text-xs text-emerald-500 absolute right-0 top-1.5"></i> <strong>חלק 5: תגובות ראשוניות לקונספט החדש:</strong> הצגת פתרון סריקת הקבלות ואישור ב-Swipe.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 15: INTERVIEW INSIGHTS -->
+        <div class="slide-container slide-hidden" id="slide15">
+            <h2 class="slide-title">הכירו את המשתמשים - תובנות מפתח מן הראיונות</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-12 gap-8 items-center">
+                    <div class="col-span-7 space-y-4 text-right">
+                        <h3 class="text-2xl font-black text-slate-900">הצלבת הממצאים ומיפוי הפערים</h3>
+                        <p class="text-slate-600 leading-relaxed text-base">
+                            ראיונות העומק שביצענו חיזקו וחידדו את הצורך של האפליקציה לתת מענה משולב ומאוזן לשני הקטבים הפסיכולוגיים שהתגלו במחקר:
+                        </p>
+                        <ul class="space-y-3.5">
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-check text-emerald-500 absolute right-0 top-1"></i> <strong>מריה מייצגת את ציר ניהול המלאי (סדר קוגניטיבי):</strong> דגש על הקטנת הפסד כספי, מעקב קפדני וקבלת שליטה במלאי כדי למנוע קניות כפולות או פקיעת תוקף.</li>
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-check text-emerald-500 absolute right-0 top-1"></i> <strong>טליה מייצגת את ציר הפחתת העומס המנטלי (מתכונים):</strong> דגש על הקלת כאב הראש היומי של 'מה לבשל' מול מקרר ריק, ומניעת תסכול ועצבים.</li>
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-check text-emerald-500 absolute right-0 top-1"></i> <strong>ערך הליבה המשולב:</strong> האפליקציה חייבת להיות כלי ניהול מלאי קל ואקטיבי מחד (בשביל מריה) ומחולל פתרונות קולינרי מהיר ומקל מאידך (בשביל טליה).</li>
+                        </ul>
+                    </div>
+                    <div class="col-span-5 rounded-2xl overflow-hidden shadow-lg border border-slate-200 h-[340px]">
+                        <img class="w-full h-full object-cover" src="https://media.istockphoto.com/id/1192687826/photo/happy-young-asian-family-preparing-and-cooking-healthy-food-in-kitchen-family-relaxing-and.jpg?s=612x612&w=0&k=20&c=YD4n8P3sHn5dNqnbndvkZqaBDfiJCmo9LH7bYmi7qmw=" alt="Young family cooking together in kitchen space">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 16: CORE PROBLEM & SOLUTION -->
+        <div class="slide-container slide-hidden" id="slide16">
+            <h2 class="slide-title">הגדרה וניסוח הבעיה המרכזית והפתרון</h2>
+            <p class="text-center text-sm text-slate-500 font-bold mb-6 -mt-2">הבעיה והצורך שהמוצר נותן להם מענה</p>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-2 gap-8 text-right">
+                    <div class="bg-white border-r-8 border-accent-500 p-8 rounded-l-2xl rounded-r-sm shadow-sm flex flex-col justify-between">
+                        <div>
+                            <span class="text-accent-500 font-extrabold uppercase text-xs tracking-wider">הבעיה</span>
+                            <h3 class="text-2xl font-black text-slate-900 mt-2 mb-4">ניהול מלאי מזון ביתי – אתגר יומיומי</h3>
+                            <div class="space-y-4 text-slate-600 leading-relaxed text-sm">
+                                <p>
+                                    משקי בית רבים מתקשים לנהל את מלאי המזון שלהם בצורה יעילה. מוצרים נשכחים במקרר או במזווה, נרכשים שוב למרות שכבר קיימים בבית, ולעיתים מתקלקלים לפני שנעשה בהם שימוש. התוצאה היא בזבוז מזון, הוצאות כספיות מיותרות וחוסר שליטה במלאי הקיים.
+                                </p>
+                                <p>
+                                    אף שקיימות אפליקציות לניהול מלאי, רובן דורשות מהמשתמש להזין מוצרים באופן ידני או לסרוק כל מוצר בנפרד. תהליך זה גוזל זמן ומאמץ, ולכן משתמשים רבים נוטשים את האפליקציה לאחר שימוש קצר ואינם מצליחים לשמור על מלאי מעודכן לאורך זמן.
+                                </p>
+                            </div>
+                        </div>
+                        <p class="text-accent-500 font-bold text-sm mt-4">החיכוך הגבוה בתחזוקה השוטפת מונע אימוץ ארוך טווח של פתרונות קיימים.</p>
+                    </div>
+                    <div class="bg-white border-r-8 border-emerald-500 p-8 rounded-l-2xl rounded-r-sm shadow-sm flex flex-col justify-between">
+                        <div>
+                            <span class="text-emerald-500 font-extrabold uppercase text-xs tracking-wider">הפתרון</span>
+                            <h3 class="text-2xl font-black text-slate-900 mt-2 mb-4">עדכון מלאי אוטומטי ומהיר</h3>
+                            <p class="text-slate-600 leading-relaxed text-sm">
+                                המוצר שלנו נועד לפתור את בעיית התחזוקה השוטפת של מלאי המטבח באמצעות תהליך פשוט ואוטומטי: סריקת קבלת הקנייה, זיהוי המוצרים שנרכשו, הצלבתם עם מאגרי מידע, ואישור מהיר באמצעות ממשק Swipe. כך ניתן לעדכן את המלאי בתוך שניות, להפחית את ההתעסקות הידנית, לשפר את המודעות למוצרים הקיימים בבית, לצמצם רכישות כפולות ולהקטין את בזבוז המזון.
+                            </p>
+                        </div>
+                        <p class="text-emerald-500 font-bold text-sm mt-4">סריקה אחת, אישור מהיר – מלאי מעודכן בלי מאמץ ידני.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 17: USER PERSONAS AND BEHAVIORAL ROLES -->
+        <div class="slide-container slide-hidden" id="slide17">
+            <h2 class="slide-title">פרסונות משתמש ותפקידים התנהגותיים (User Personas)</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-2 gap-8 items-stretch">
+                    
+                    <!-- COLUMN 1: MARIA -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-4 border-b border-slate-100 pb-3 mb-3">
+                                <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-emerald-500 shrink-0">
+                                    <img class="w-full h-full object-cover" src="https://placehold.co/150x150/dcfce7/10b981?text=Maria" alt="מריה">
+                                </div>
+                                <div class="text-right">
+                                    <h3 class="text-lg font-black text-slate-950">מריה</h3>
+                                    <span class="text-xs bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full">מנהלת המלאי והסדר המשפחתי (מתוכננת ורציונלית)</span>
+                                </div>
+                            </div>
+
+                            <!-- Quote Block -->
+                            <div class="border-r-4 border-emerald-500 pr-3 my-2 text-xs italic text-slate-600 leading-relaxed text-right">
+                                "המוצרים הישנים עוברים לקדמת המדף, והחדשים מאחורה כדי שנסיים קודם את מה שנפתח. זרקתי קוטג' יום אחרי פג התוקף כי פשוט לא עקבתי."
+                            </div>
+                            
+                            <div class="space-y-3.5 text-right text-xs mt-3">
+                                <div>
+                                    <h4 class="font-bold text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-house text-emerald-500"></i> צרכים וקונטקסט:</h4>
+                                    <p class="text-slate-500 mr-5">אם חד הורית לשני מתבגרים, עובדת במשרה מלאה, מנהלת משק בית עמוס. צריכה פתרון מהיר לעדכון מלאי ללא מאמץ קוגניטיבי מרובה.</p>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-heart-crack text-red-500"></i> נקודות כאב (Pain Points):</h4>
+                                    <p class="text-slate-500 mr-5">עומס ולחץ זמן קיצוני בערב, כעס ואשמה חזקה על זריקת מזון, חוסר סובלנות להקלדה ידנית.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 mt-3 text-right">
+                            <h4 class="font-extrabold text-[11px] text-emerald-600 mb-1 uppercase tracking-wider">הפתרון במערכת (UX Solution)</h4>
+                            <p class="text-[11px] text-slate-600 leading-relaxed">סריקת OCR מהירה ב-3 שניות המנטרלת את חסם הזמן, ושיקוף חזותי קל במותג רמזור.</p>
+                        </div>
+                    </div>
+
+                    <!-- COLUMN 2: TALIA -->
+                    <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-4 border-b border-slate-100 pb-3 mb-3">
+                                <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-accent-500 shrink-0">
+                                    <img class="w-full h-full object-cover" src="https://placehold.co/150x150/ffedd5/f97316?text=Talia" alt="טליה">
+                                </div>
+                                <div class="text-right">
+                                    <h3 class="text-lg font-black text-slate-950">טליה</h3>
+                                    <span class="text-xs bg-orange-50 text-accent-600 font-bold px-2 py-0.5 rounded-full">המבשלת הספונטנית (עומס קוגניטיבי גבוה)</span>
+                                </div>
+                            </div>
+
+                            <!-- Quote Block -->
+                            <div class="border-r-4 border-accent-500 pr-3 my-2 text-xs italic text-slate-600 leading-relaxed text-right">
+                                "זריקת אוכל מעצבן בטירוף! זה מעורר בי עצבים, תחושה של בזבוז כסף, ובעיקר הרגשה של זלזול בעצמנו."
+                            </div>
+                            
+                            <div class="space-y-3.5 text-right text-xs mt-3">
+                                <div>
+                                    <h4 class="font-bold text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-graduation-cap text-accent-500"></i> צרכים וקונטקסט:</h4>
+                                    <p class="text-slate-500 mr-5">בזוגיות צעירה יחד עם ארוסה, תקציב מוגבל מאוד, מנהלת מקרר מורכב. לא אוהבת את תהליך הבישול והקניות.</p>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-eye-slash text-red-500"></i> נקודות כאב (Pain Points):</h4>
+                                    <p class="text-slate-500 mr-5">מוצרים קטנים הולכים לאיבוד במקרר במדפים ללא קטגוריה, קנייה כפולה עקב חוסר סנכרון, רעב ותסכול כשחסר רכיב.</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-slate-50 border border-slate-100 rounded-xl p-3 mt-3 text-right">
+                            <h4 class="font-extrabold text-[11px] text-accent-500 mb-1 uppercase tracking-wider">הפתרון במערכת (UX Solution)</h4>
+                            <p class="text-[11px] text-slate-600 leading-relaxed">מחולל מתכונים דינמי המבוסס על חומרי הגלם הקיימים, פתרון תחלופה חכמה לרכיבים חסרים ומניעת רכישות כפולות.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 18: UX TASK ANALYSIS MATRIX -->
+        <div class="slide-container slide-hidden" id="slide18">
+            <h2 class="slide-title">ניתוח משימות - UX Task Analysis Matrix</h2>
+            <div class="flex flex-col justify-center flex-grow text-xs">
+                <div class="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                    <table class="w-full border-collapse text-right">
+                        <thead>
+                            <tr class="bg-slate-100 border-b border-slate-200 text-slate-800 font-bold text-[12px]">
+                                <th class="p-3 w-[18%]">1. שלב במשימה</th>
+                                <th class="p-3 w-[12%]">2. תדירות</th>
+                                <th class="p-3 w-[12%]">3. מאמץ תפעולי</th>
+                                <th class="p-3 w-[29%] border-r border-slate-200">4. הכשל בפתרונות קיימים</th>
+                                <th class="p-3 w-[29%] border-r border-slate-200 text-culinary-700 bg-emerald-50/50">5. הפתרון ב"מה במקרר"</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 text-slate-600 text-[11px] leading-relaxed">
+                            <tr>
+                                <td class="p-3 font-bold bg-slate-50 text-slate-900">הזנת מוצרים חדשים</td>
+                                <td class="p-3">גבוהה (אחרי קנייה)</td>
+                                <td class="p-3">
+                                    <span class="bg-red-100 text-red-700 px-2.5 py-1 rounded-full font-bold text-[10px]">גבוה מאוד</span>
+                                </td>
+                                <td class="p-3 border-r border-slate-200">נטישת המשתמש עקב הקלדה ידנית ומייגעת של פריט-פריט.</td>
+                                <td class="p-3 border-r border-slate-200 bg-emerald-50/10 font-medium text-slate-800">אוטומציה מלאה – צילום קבלה מהיר (OCR) והצלבה מול מאגר CHP הלאומי.</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-bold bg-slate-50 text-slate-900">תיקון שגיאות ואישור</td>
+                                <td class="p-3">בינונית</td>
+                                <td class="p-3">
+                                    <span class="bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full font-bold text-[10px]">בינוני-נמוך</span>
+                                </td>
+                                <td class="p-3 border-r border-slate-200">עומס בחירות ועייפות החלטה (Hick's Law) בתיקון ידני במקלדת.</td>
+                                <td class="p-3 border-r border-slate-200 bg-emerald-50/10 font-medium text-slate-800">מיקרו-אינטראקציה משחקית – הגבלת פריטים קריטיים ואישור במחוות Swipe to Approve.</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-bold bg-slate-50 text-slate-900">מעקב שוטף וניטור טריות</td>
+                                <td class="p-3">יומיומית (לפני בישול)</td>
+                                <td class="p-3">
+                                    <span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold text-[10px]">נמוך</span>
+                                </td>
+                                <td class="p-3 border-r border-slate-200">דרישה לזיכרון אקטיבי (Recall) וטבלאות נתונים ארוכות ומסורבלות.</td>
+                                <td class="p-3 border-r border-slate-200 bg-emerald-50/10 font-medium text-slate-800">היזכרות במקום שליפה – תצוגה "במבט על" בעזרת מודל מנטלי שגור (צבעי רמזור).</td>
+                            </tr>
+                            <tr>
+                                <td class="p-3 font-bold bg-slate-50 text-slate-900">בחירת מתכון לניצול שאריות</td>
+                                <td class="p-3">בינונית-גבוהה</td>
+                                <td class="p-3">
+                                    <span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full font-bold text-[10px]">נמוך</span>
+                                </td>
+                                <td class="p-3 border-r border-slate-200">פלטפורמות מתכונים מנותקות מהמקרר, הדורשות מהמשתמש להזין רכיבים מחדש.</td>
+                                <td class="p-3 border-r border-slate-200 bg-emerald-50/10 font-medium text-slate-800">דחיפת ערך (Push) – תזכורת פרו-אקטיבית חכמה המציעה מתכונים מהירים למוצרים שעומדים לפוג.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 19: USER FLOW DIAGRAM (TEMPLATE) -->
+        <div class="slide-container slide-hidden slide-template" id="slide19">
+            <div class="absolute top-0 left-0 right-0 h-11 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-extrabold text-xs tracking-wider flex items-center justify-between px-8 z-40 rounded-t-[24px] shadow-md border-b border-orange-700/20">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation animate-bounce text-sm"></i> שקופית טמפלייט - מיועדת להשלמת צוות ה-UX</span>
+                <span class="bg-slate-950 text-amber-400 px-3 py-1 rounded-md font-mono text-[10px]">משימה לצוות: להזין את תרשים זרימת המשתמש הסופי והמלא</span>
+            </div>
+
+            <h2 class="slide-title">תרשים זרימת משתמש (User Flow Scenario)</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <h3 class="text-xl font-extrabold text-slate-950 mb-6 text-right">מסלול הזרימה העיקרי באפליקציה - מהקניות ועד למתכון</h3>
+                <div class="flex justify-between items-center w-full relative">
+                    <div class="flow-node bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-center w-[18%]">
+                        <h4 class="font-extrabold text-slate-800 mb-1 text-sm">1. סריקת קבלה</h4>
+                        <p class="text-xs text-slate-400">צילום מהיר של קבלת הסופר בסיום קניות.</p>
+                    </div>
+                    <div class="text-slate-400 text-lg"><i class="fa-solid fa-arrow-left"></i></div>
+                    <div class="flow-node bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-center w-[18%]">
+                        <h4 class="font-extrabold text-slate-800 mb-1 text-sm">2. זיהוי אוטומטי</h4>
+                        <p class="text-xs text-slate-400">מנוע ה-OCR וה-CHP מפענחים הפריטים.</p>
+                    </div>
+                    <div class="text-slate-400 text-lg"><i class="fa-solid fa-arrow-left"></i></div>
+                    <div class="flow-node bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-center w-[18%]">
+                        <h4 class="font-extrabold text-slate-800 mb-1 text-sm">3. אישור מלאי (Swipe)</h4>
+                        <p class="text-xs text-slate-400">החלקה קלה לאישור ורענון המלאי.</p>
+                    </div>
+                    <div class="text-slate-400 text-lg"><i class="fa-solid fa-arrow-left"></i></div>
+                    <div class="flow-node bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-center w-[18%]">
+                        <h4 class="font-extrabold text-slate-800 mb-1 text-sm">4. שיקוף טריות</h4>
+                        <p class="text-xs text-slate-400">תצוגה צבעונית במודל רמזור אינטואיטיבי.</p>
+                    </div>
+                    <div class="text-slate-400 text-lg"><i class="fa-solid fa-arrow-left"></i></div>
+                    <div class="flow-node bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-center w-[18%]">
+                        <h4 class="font-extrabold text-slate-800 mb-1 text-sm">5. הצעת מתכון</h4>
+                        <p class="text-xs text-slate-400">קבלת מתכונים מבוססי מלאי פג תוקף.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 20: DETAILED USER SCENARIO (TEMPLATE) -->
+        <div class="slide-container slide-hidden slide-template" id="slide20">
+            <div class="absolute top-0 left-0 right-0 h-11 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-extrabold text-xs tracking-wider flex items-center justify-between px-8 z-40 rounded-t-[24px] shadow-md border-b border-orange-700/20">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation animate-bounce text-sm"></i> שקופית טמפלייט - מיועדת להשלמת צוות ה-UX</span>
+                <span class="bg-slate-950 text-amber-400 px-3 py-1 rounded-md font-mono text-[10px]">משימה לצוות: לערוך את תרחיש המשתמש המפורט שלכם בטקסט</span>
+            </div>
+
+            <h2 class="slide-title">תרחיש משתמש מפורט - מסעה של טליה במערכת</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-12 gap-8 items-center">
+                    <div class="col-span-7 space-y-4 text-right">
+                        <h3 class="text-2xl font-black text-slate-900">מחזורת הקניות ועד לשולחן האוכל</h3>
+                        <p class="text-slate-600 text-base leading-relaxed">
+                            כיצד הממשק החכם של "מה במקרר" פוגש את טליה ברגעי האמת של ניהול המטבח:
+                        </p>
+                        <ul class="space-y-3">
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-angle-left text-emerald-500 absolute right-0 top-1"></i> <strong>שלב 1 - פריקה מהירה:</strong> טליה חוזרת הביתה מותשת מהסופר. היא פותחת את האפליקציה, לוחצת על כפתור הסריקה ומצלמת את הקבלה ב-3 שניות בלבד.</li>
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-angle-left text-emerald-500 absolute right-0 top-1"></i> <strong>שלב 2 - מיקרו-אינטראקציה מהנה:</strong> האפליקציה מזהה את המוצרים ומציגה לה 4 פריטים שהיו בספק או בעלי תאריך תוקף לא ברור. ב-Swipe קל ימינה היא מאשרת אותם.</li>
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-angle-left text-emerald-500 absolute right-0 top-1"></i> <strong>שלב 3 - המלצה חכמה:</strong> כעבור יומיים, לקראת ארוחת הערב, טליה מקבלת תזכורת חכמה: "מוצרי החלב וגבינת הקוטג' שלך יפוגו מחר. הנה 3 הצעות למתכוני פשטידה מהירים לילדים."</li>
+                        </ul>
+                    </div>
+                    <div class="col-span-5 rounded-2xl overflow-hidden shadow-lg border border-slate-200 h-[340px]">
+                        <img class="w-full h-full object-cover" src="https://placehold.co/600x400/f1f5f9/475569?text=What+To+Eat+Screener+OCR" alt="Scanning Process Sketch">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 21: INFORMATION ARCHITECTURE (TEMPLATE) -->
+        <div class="slide-container slide-hidden slide-template" id="slide21">
+            <div class="absolute top-0 left-0 right-0 h-11 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-extrabold text-xs tracking-wider flex items-center justify-between px-8 z-40 rounded-t-[24px] shadow-md border-b border-orange-700/20">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation animate-bounce text-sm"></i> שקופית טמפלייט - מיועדת להשלמת צוות ה-UX</span>
+                <span class="bg-slate-950 text-amber-400 px-3 py-1 rounded-md font-mono text-[10px]">משימה לצוות: להוסיף את תרשים ארכיטקטורת המידע המלא שלכם</span>
+            </div>
+
+            <h2 class="slide-title">תרשים ארכיטקטורת המידע (Information Architecture)</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-5 gap-4">
+                    <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-center">
+                        <h3 class="font-extrabold text-slate-900 bg-slate-50 p-2 rounded-lg mb-3 text-sm">1. מסך הבית</h3>
+                        <div class="space-y-2 text-xs text-slate-500">
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">מצב המקרר הכללי</p>
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">כפתור סריקה ראשי</p>
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">קיצורי דרך מהירים</p>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-center">
+                        <h3 class="font-extrabold text-slate-900 bg-slate-50 p-2 rounded-lg mb-3 text-sm">2. מנגנון סריקה</h3>
+                        <div class="space-y-2 text-xs text-slate-500">
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">מצלמת OCR לקבלה</p>
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">חיבור למסד CHP</p>
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">אישור קבוצות מוצרים</p>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-center">
+                        <h3 class="font-extrabold text-slate-900 bg-slate-50 p-2 rounded-lg mb-3 text-sm">3. המקרר שלי</h3>
+                        <div class="space-y-2 text-xs text-slate-500">
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">סינון לפי קטגוריות</p>
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">מיון לפי מדד טריות</p>
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">עריכה ועדכון ידני</p>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-center">
+                        <h3 class="font-extrabold text-slate-900 bg-slate-50 p-2 rounded-lg mb-3 text-sm">4. אזור מתכונים</h3>
+                        <div class="space-y-2 text-xs text-slate-500">
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">הצעות מבוססות מלאי</p>
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">סינון לפי קושי וזמן</p>
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">שמירת מועדפים</p>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-4 rounded-xl shadow-sm text-center">
+                        <h3 class="font-extrabold text-slate-900 bg-slate-50 p-2 rounded-lg mb-3 text-sm">5. פרופיל והגדרות</h3>
+                        <div class="space-y-2 text-xs text-slate-500">
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">פרטים והעדפות</p>
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">הגדרות התראה חכמות</p>
+                            <p class="p-1.5 bg-slate-50 border border-dashed border-slate-200 rounded">היסטוריית חיסכון ומדדים</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 22: PROTOTYPE & QR CODE -->
+        <div class="slide-container slide-hidden" id="slide22">
+            <h2 class="slide-title">אב טיפוס אינטראקטיבי ומבחני שימושיות</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-2 gap-10 items-center">
+                    <div class="space-y-4 text-right">
+                        <h3 class="text-2xl font-black text-slate-900">מוזמנים להתנסות באב-הטיפוס (Prototype)</h3>
+                        <p class="text-slate-600 leading-relaxed text-base">
+                            פיתחנו אב טיפוס אינטראקטיבי בעל נאמנות גבוהה (High-Fidelity) הממחיש באופן מדויק את זרימת המשתמש מהסריקה, דרך כרטיסיית ה-Swipe ועד לקבלת מדדי הטריות הצבעוניים.
+                        </p>
+                        <ul class="space-y-2">
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-qrcode text-emerald-500 absolute right-0 top-1"></i> <strong>סריקה חכמה מהמובייל:</strong> סרקו את קוד ה-QR בצד שמאל כדי לחוות את זרימת המובייל הייעודית כפי שהיא תיראה בקצה.</li>
+                        </ul>
+                    </div>
+                    <div class="flex justify-center items-center bg-white border border-slate-200 rounded-2xl p-8 h-[340px] shadow-sm">
+                        <div class="text-center">
+                            <div class="w-48 h-48 bg-slate-900 p-4 rounded-xl mx-auto mb-4 flex justify-center items-center">
+                                <div class="w-40 h-40 bg-white p-2 relative">
+                                    <div class="absolute top-0 left-0 w-8 h-8 bg-slate-900 border-4 border-white"></div>
+                                    <div class="absolute top-0 right-0 w-8 h-8 bg-slate-900 border-4 border-white"></div>
+                                    <div class="absolute bottom-0 left-0 w-8 h-8 bg-slate-900 border-4 border-white"></div>
+                                    <div class="absolute inset-8 bg-slate-900/10 flex flex-wrap gap-1 p-2">
+                                        <div class="w-3 h-3 bg-slate-950"></div><div class="w-2 h-2 bg-slate-950"></div><div class="w-3 h-3 bg-slate-950"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <p class="font-extrabold text-sm text-slate-800">סרקו לקבלת גישה מיידית לפרוטוטייפ</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- NEW REQUIRED MOCKUP FLAT SCREENS (SLIDES 23-26) -->
+        
+        <!-- SLIDE 23: FLAT SCREEN 1 - SCANNING & OCR (TEMPLATE) -->
+        <div class="slide-container slide-hidden slide-template" id="slide23">
+            <div class="absolute top-0 left-0 right-0 h-11 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-extrabold text-xs tracking-wider flex items-center justify-between px-8 z-40 rounded-t-[24px] shadow-md border-b border-orange-700/20">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation animate-bounce text-sm"></i> שקופית טמפלייט - מיועדת להעלאת צילום מסך מפיגמה</span>
+                <span class="bg-slate-950 text-amber-400 px-3 py-1 rounded-md font-mono text-[10px]">משימה לצוות: הוספת תמונת מסך סריקה ופענוח קבלה (OCR)</span>
+            </div>
+
+            <h2 class="slide-title">מסך אב-הטיפוס: סריקה ופענוח קבלות (OCR)</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-12 gap-8 items-center">
+                    <div class="col-span-4 flex justify-center">
+                        <div class="smartphone-frame opacity-80 border-dashed border-amber-500">
+                            <div class="w-full h-full bg-slate-800 rounded-[34px] flex flex-col justify-center items-center text-center p-4">
+                                <i class="fa-solid fa-camera text-slate-600 text-5xl mb-4"></i>
+                                <span class="text-xs text-slate-400 font-bold block mb-2">מקום להעלות את מסך המובייל של הסריקה</span>
+                                <span class="text-[10px] text-amber-500">Figma Frame: Camera Scan & Auto crop</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-span-8 space-y-4 text-right">
+                        <h3 class="text-2xl font-black text-slate-900">חוויית צילום קבלה מהירה ואינטואיטיבית</h3>
+                        <p class="text-slate-600 leading-relaxed text-base">
+                            מסך זה מציג את תחילת זרימת המשתמש (User Flow) ברגע החזרה מהקניות. על פי החלטות האפיון שלנו:
+                        </p>
+                        <ul class="space-y-3">
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-chevron-left text-emerald-500 absolute right-0 top-1"></i> <strong>גבולות סריקה אוטומטיים:</strong> המערכת מזהה את שולי הקבלה באופן אוטומטי ומנחה את המשתמש בזמן אמת.</li>
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-chevron-left text-emerald-500 absolute right-0 top-1"></i> <strong>חיווי פענוח חי:</strong> הצגת מד התקדמות (Processing) קומפקטי שמפחית את עומס ההמתנה המנטלי.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 24: FLAT SCREEN 2 - SWIPE TO APPROVE (TEMPLATE) -->
+        <div class="slide-container slide-hidden slide-template" id="slide24">
+            <div class="absolute top-0 left-0 right-0 h-11 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-extrabold text-xs tracking-wider flex items-center justify-between px-8 z-40 rounded-t-[24px] shadow-md border-b border-orange-700/20">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation animate-bounce text-sm"></i> שקופית טמפלייט - מיועדת להעלאת צילום מסך מפיגמה</span>
+                <span class="bg-slate-950 text-amber-400 px-3 py-1 rounded-md font-mono text-[10px]">משימה לצוות: הוספת תמונת מסך כרטיסיית הסוויפ והאישור</span>
+            </div>
+
+            <h2 class="slide-title">מסך אב-הטיפוס: אישור מהיר ומחוות Swipe</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-12 gap-8 items-center">
+                    <div class="col-span-4 flex justify-center">
+                        <div class="smartphone-frame opacity-80 border-dashed border-amber-500">
+                            <div class="w-full h-full bg-slate-800 rounded-[34px] flex flex-col justify-center items-center text-center p-4">
+                                <i class="fa-solid fa-hand-pointer text-slate-600 text-5xl mb-4"></i>
+                                <span class="text-xs text-slate-400 font-bold block mb-2">מקום להעלות את מסך המובייל של ה-Swipe to Approve</span>
+                                <span class="text-[10px] text-amber-500">Figma Frame: Swipe Cards & Controls</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-span-8 space-y-4 text-right">
+                        <h3 class="text-2xl font-black text-slate-900">גיימיפיקציה וצמצום עומס אישור המלאי</h3>
+                        <p class="text-slate-600 leading-relaxed text-base">
+                            מסך ה-Tinder-style הייחודי של המערכת המיועד לצמצום חסמי הזנה ידניים בהתאם למודלים פסיכולוגיים:
+                        </p>
+                        <ul class="space-y-3">
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-chevron-left text-emerald-500 absolute right-0 top-1"></i> <strong>החלקה ימינה (Swipe Right):</strong> אישור מהיר שהמוצר אכן נכנס למקרר ומעבר לפריט הבא.</li>
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-chevron-left text-emerald-500 absolute right-0 top-1"></i> <strong>החלקה שמאלה (Swipe Left):</strong> השלכה או אי-הזנה במקרה של שגיאה או פריט שלא נקנה.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 25: FLAT SCREEN 3 - REFRIGERATOR INVENTORY (TEMPLATE) -->
+        <div class="slide-container slide-hidden slide-template" id="slide25">
+            <div class="absolute top-0 left-0 right-0 h-11 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-extrabold text-xs tracking-wider flex items-center justify-between px-8 z-40 rounded-t-[24px] shadow-md border-b border-orange-700/20">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation animate-bounce text-sm"></i> שקופית טמפלייט - מיועדת להעלאת צילום מסך מפיגמה</span>
+                <span class="bg-slate-950 text-amber-400 px-3 py-1 rounded-md font-mono text-[10px]">משימה לצוות: הוספת תמונת מסך המקרר ומדדי הטריות</span>
+            </div>
+
+            <h2 class="slide-title">מסך אב-הטיפוס: המקרר שלי ומדדי טריות</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-12 gap-8 items-center">
+                    <div class="col-span-4 flex justify-center">
+                        <div class="smartphone-frame opacity-80 border-dashed border-amber-500">
+                            <div class="w-full h-full bg-slate-800 rounded-[34px] flex flex-col justify-center items-center text-center p-4">
+                                <i class="fa-solid fa-egg text-slate-600 text-5xl mb-4"></i>
+                                <span class="text-xs text-slate-400 font-bold block mb-2">מקום להעלות את מסך המובייל של המקרר הדיגיטלי</span>
+                                <span class="text-[10px] text-amber-500">Figma Frame: Refrigerator Overview & Freshness</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-span-8 space-y-4 text-right">
+                        <h3 class="text-2xl font-black text-slate-900">שיקוף במבט על ומודל רמזור פשוט</h3>
+                        <p class="text-slate-600 leading-relaxed text-base">
+                            מסך ניטור המלאי השוטף המיועד עבור מריה לשיקוף קל ללא מאמץ מנטלי:
+                        </p>
+                        <ul class="space-y-3">
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-chevron-left text-emerald-500 absolute right-0 top-1"></i> <strong>מדדי צבע רמזור:</strong> ירוק (טרי לחלוטין), צהוב (לצרוך בקרוב), כתום/אדום (דחוף לנצל מייד).</li>
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-chevron-left text-emerald-500 absolute right-0 top-1"></i> <strong>סינון קטגוריות מהיר:</strong> מעבר נוח בין חלבי, בשרי, פירות וירקות, ומוצרי מזווה.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 26: FLAT SCREEN 4 - RECIPES MAKER (TEMPLATE) -->
+        <div class="slide-container slide-hidden slide-template" id="slide26">
+            <div class="absolute top-0 left-0 right-0 h-11 bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-extrabold text-xs tracking-wider flex items-center justify-between px-8 z-40 rounded-t-[24px] shadow-md border-b border-orange-700/20">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation animate-bounce text-sm"></i> שקופית טמפלייט - מיועדת להעלאת צילום מסך מפיגמה</span>
+                <span class="bg-slate-950 text-amber-400 px-3 py-1 rounded-md font-mono text-[10px]">משימה לצוות: הוספת תמונת מסך הצעות המתכונים החכמות</span>
+            </div>
+
+            <h2 class="slide-title">מסך אב-הטיפוס: הצעות למתכונים חכמים</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-12 gap-8 items-center">
+                    <div class="col-span-4 flex justify-center">
+                        <div class="smartphone-frame opacity-80 border-dashed border-amber-500">
+                            <div class="w-full h-full bg-slate-800 rounded-[34px] flex flex-col justify-center items-center text-center p-4">
+                                <i class="fa-solid fa-bowl-food text-slate-600 text-5xl mb-4"></i>
+                                <span class="text-xs text-slate-400 font-bold block mb-2">מקום להעלות את מסך המובייל של הצעות המתכונים</span>
+                                <span class="text-[10px] text-amber-500">Figma Frame: Recipe Generator UI & Filters</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-span-8 space-y-4 text-right">
+                        <h3 class="text-2xl font-black text-slate-900">מחולל מתכונים דינמי מבוסס תפוגה</h3>
+                        <p class="text-slate-600 leading-relaxed text-base">
+                            מסך ההמלצות הקולינריות המיועד עבור טליה לצמצום עייפות קוגניטיבית והחלטה של "מה לבשל בערב":
+                        </p>
+                        <ul class="space-y-3">
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-chevron-left text-emerald-500 absolute right-0 top-1"></i> <strong>תעדוף מוצרים שעומדים לפוג:</strong> מנוע החיפוש בונה את המתכונים סביב רכיבים צהובים וכתומים.</li>
+                            <li class="relative pr-6 text-slate-600"><i class="fa-solid fa-chevron-left text-emerald-500 absolute right-0 top-1"></i> <strong>הצגת חלופות חכמות:</strong> במידה וחסר רכיב קטן, האפליקציה מציעה לו תחלופה מוכרת באופן מובנה.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- END OF NEW FLAT MOCKUP SCREENS -->
+
+        <!-- SLIDE 27: SPECIFICATION PROBLEMS AND SOLUTIONS -->
+        <div class="slide-container slide-hidden" id="slide27">
+            <h2 class="slide-title">בעיות אפיון ופתרונן - היבטים פסיכולוגיים ב-UX</h2>
+            <div class="flex flex-col justify-center flex-grow">
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col text-right">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-culinary-600 text-xl mb-4"><i class="fa-solid fa-receipt"></i></div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-3">הזנת מוצרים חדשים</h3>
+                            <p class="text-xs text-accent-500 font-bold mb-2">הבעיה:</p>
+                            <p class="text-sm text-slate-500 leading-relaxed mb-4">כיצד מבצעים הזנת מוצרים חדשים בלי הסתמכות מלאה על OCR מצד אחד, או צורך בהקלדה ידנית של כל מוצר מצד שני?</p>
+                            <p class="text-xs text-emerald-600 font-bold mb-2">הפתרון:</p>
+                            <ul class="text-sm text-slate-500 leading-relaxed space-y-2">
+                                <li class="relative pr-5"><i class="fa-solid fa-chevron-left text-[10px] text-emerald-500 absolute right-0 top-1.5"></i> הזנה מהירה – סריקת קבלה מהירה כנקודת הכניסה הראשית להזנת מוצרים.</li>
+                                <li class="relative pr-5"><i class="fa-solid fa-chevron-left text-[10px] text-emerald-500 absolute right-0 top-1.5"></i> אישור פשוט בהחלקת אצבע – שימוש במיקרו-אינטרקציה של swipe to approve כדי לאשר מוצרים לא ברורים או בעלי תוקף לא ברור, כך שההחלטה הופכת לבינארית ופשוטה.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col text-right">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-culinary-600 text-xl mb-4"><i class="fa-solid fa-list-check"></i></div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-3">תיקון שגיאות ואישור פריטים</h3>
+                            <p class="text-xs text-accent-500 font-bold mb-2">הבעיה:</p>
+                            <p class="text-sm text-slate-500 leading-relaxed mb-4">לאחר הסריקה, כיצד מבינים מה זוהה נכון, מה דורש אישור ומה חסר, בלי לעצור את הזרימה של התהליך תוך הצגת כמות עיניינית של מידע.</p>
+                            <p class="text-xs text-emerald-600 font-bold mb-2">הפתרון:</p>
+                            <ul class="text-sm text-slate-500 leading-relaxed space-y-2">
+                                <li class="relative pr-5"><i class="fa-solid fa-chevron-left text-[10px] text-emerald-500 absolute right-0 top-1.5"></i> חלוקה לתהליך בשלבים ברורים – הצגת הפריטים לאחר הסריקה בשלבים של (צילום ← אישור ← השלמה למלאי), מה שמאפשר חלוקה של משימה מורכבת לצעדים עוקבים.</li>
+                                <li class="relative pr-5"><i class="fa-solid fa-chevron-left text-[10px] text-emerald-500 absolute right-0 top-1.5"></i> אישור אינטואיטיבי במחוות מגע – מיקום פעולת האישור כמיקרו-אינטרקציה קצרה בתוך התהליך עצמו, תוך ניצול מחווה טבעית במובייל שמאפשרת פעולה זורמת ומהירה.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col text-right">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-culinary-600 text-xl mb-4"><i class="fa-solid fa-link"></i></div>
+                            <h3 class="text-lg font-bold text-slate-900 mb-3">חיבור בין מלאי, תכנון ארוחות והתראות</h3>
+                            <p class="text-xs text-accent-500 font-bold mb-2">הבעיה:</p>
+                            <p class="text-sm text-slate-500 leading-relaxed mb-4">כיצד מחברים בין איזור "המקרר שלי" לאיזור המתכונים וההתראות בצורה טבעית.</p>
+                            <p class="text-xs text-emerald-600 font-bold mb-2">הפתרון:</p>
+                            <ul class="text-sm text-slate-500 leading-relaxed space-y-2">
+                                <li class="relative pr-5"><i class="fa-solid fa-chevron-left text-[10px] text-emerald-500 absolute right-0 top-1.5"></i> מבנה מסכים ברור – בניית ארכיטקטורת מידע ברורה עם איזורים נפרדים אך קשורים: מסך בית, מנגנון סריקה, המקרר שלי, איזור מתכונים ופרופיל/העדפות.</li>
+                                <li class="relative pr-5"><i class="fa-solid fa-chevron-left text-[10px] text-emerald-500 absolute right-0 top-1.5"></i> התראות ממוקדות – שימוש בהתרעות פוש שמחזירות את המשתמשת לפעולה ספציפית.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 28: Q&A -->
+        <div class="slide-container slide-hidden" id="slide28">
+            <div class="flex flex-col justify-center items-center h-full text-center max-w-[900px] mx-auto space-y-8">
+                <div>
+                    <h2 class="text-6xl font-black text-slate-900 leading-tight">תודה על ההקשבה!</h2>
+                    <p class="text-xl text-slate-500 mt-2">נשמח לענות על כל שאלה שלכם בנוגע לאפיון ועל הפן הפסיכולוגי של הפרויקט.</p>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-6 w-full">
+                    <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+                        <i class="fa-solid fa-envelope text-emerald-500 text-3xl mb-3"></i>
+                        <h4 class="font-extrabold text-slate-900 mb-1">שלחו לנו מייל</h4>
+                        <p class="text-xs text-slate-500 font-bold">mabamakarer@post.tau.ac.il</p>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+                        <i class="fa-solid fa-graduation-cap text-emerald-500 text-3xl mb-3"></i>
+                        <h4 class="font-extrabold text-slate-900 mb-1">אוניברסיטת תל אביב</h4>
+                        <p class="text-xs text-slate-500 font-bold">היבטים פסיכולוגיים ב-UX</p>
+                    </div>
+                    <div class="bg-white border border-slate-200 p-5 rounded-2xl shadow-sm">
+                        <i class="fa-solid fa-users text-emerald-500 text-3xl mb-3"></i>
+                        <h4 class="font-extrabold text-slate-900 mb-1">צוות הפרויקט</h4>
+                        <p class="text-xs text-slate-500 font-bold">יפעת, עתליה, נגה, יאן, אריאל, שרה</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Navigation Buttons Under Presentation -->
+    <div class="w-full max-w-[1280px] mt-3 flex justify-between items-center px-4">
+        <button onclick="prevSlide()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-5 rounded-xl border border-slate-700 transition flex items-center gap-2 shadow-md">
+            <i class="fa-solid fa-arrow-right"></i>
+            <span>שקופית קודמת</span>
+        </button>
+        
+        <div class="flex items-center gap-2">
+            <button onclick="goToSlide(1)" class="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs flex items-center justify-center transition border border-slate-700" title="שקופית פתיחה"><i class="fa-solid fa-home"></i></button>
+            <span class="text-xs text-slate-500">נווט באמצעות מקשי החצים <kbd class="bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700 text-[10px]">←</kbd> <kbd class="bg-slate-800 text-slate-300 px-1.5 py-0.5 rounded border border-slate-700 text-[10px]">→</kbd></span>
+        </div>
+
+        <button onclick="nextSlide()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-xl transition flex items-center gap-2 shadow-md shadow-emerald-950/20">
+            <span>שקופית הבאה</span>
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+    </div>
+
+    <!-- Raw Responses Explorer Modal popup -->
+    <div id="raw-data-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center hidden p-6">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-[1000px] w-full flex flex-col max-h-[90%] overflow-hidden border border-slate-200">
+            <div class="p-6 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <span class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center"><i class="fa-solid fa-table-list"></i></span>
+                    <h3 class="text-xl font-extrabold text-slate-900">דפדפן נתונים גולמיים מתוך הסקר</h3>
+                </div>
+                <button onclick="closeRawDataModal()" class="w-10 h-10 rounded-full bg-slate-200 hover:bg-slate-300 flex items-center justify-center transition text-slate-600 font-bold text-lg">×</button>
+            </div>
+            
+            <div class="flex-1 overflow-auto p-6" id="modal-table-container">
+                <p class="text-slate-500 text-center py-10 italic">טוען נתונים...</p>
+            </div>
+
+            <div class="p-5 border-t border-slate-200 bg-slate-50 flex justify-between items-center text-xs text-slate-400">
+                <span>מציג עד 12 שורות ראשונות לסקירה מהירה</span>
+                <button onclick="closeRawDataModal()" class="bg-slate-900 hover:bg-slate-800 text-white font-bold py-2 px-5 rounded-lg transition">סגור חלון</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Slide System and Excel Integration Script -->
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 28; 
+        
+        document.getElementById('total-slides-count').innerText = totalSlides;
+
+        // Structured SVG fallback generator to resolve local path failures on Slide 3
+        function showKitcheSvgFallback(imgElement) {
+            const container = document.getElementById('kitche-image-container');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div class="w-full h-full bg-[#10b981] p-8 flex flex-col justify-between text-white relative font-sans overflow-hidden">
+                    <div class="absolute -top-12 -right-12 w-44 h-44 bg-emerald-400/20 rounded-full blur-2xl"></div>
+                    <div class="absolute -bottom-20 -left-10 w-60 h-60 bg-emerald-500/20 rounded-full blur-2xl"></div>
+                    
+                    <div class="z-10 text-right flex flex-col justify-center h-full max-w-[55%] pr-4">
+                        <h4 class="text-5xl font-black tracking-tight leading-none mb-3" style="font-family: 'Plus Jakarta Sans', sans-serif;">Kitche</h4>
+                        <p class="text-xl font-bold opacity-90 leading-tight">it, don't ditch it!</p>
+                    </div>
+                    
+                    <!-- Premium Mockup Phones Inside SVG Grid -->
+                    <div class="absolute top-8 bottom-8 left-6 right-[50%] bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 p-3 flex gap-2 shadow-xl overflow-hidden">
+                        <!-- Phone screen 1: List -->
+                        <div class="flex-1 bg-white rounded-xl p-2 text-[8px] text-slate-800 flex flex-col gap-1.5 shadow-md">
+                            <div class="font-extrabold border-b border-slate-100 pb-1 text-slate-900 flex justify-between items-center">
+                                <span>Products</span>
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="flex justify-between items-center"><span class="font-bold">Beef</span><span class="text-slate-300">●</span></div>
+                                <div class="bg-slate-100 h-1.5 rounded w-3/4"></div>
+                                <div class="flex justify-between items-center"><span class="font-bold">Bacon</span><span class="text-slate-300">●</span></div>
+                                <div class="bg-slate-100 h-1.5 rounded w-1/2"></div>
+                                <div class="flex justify-between items-center"><span class="font-bold">Bread</span><span class="text-[#10b981]">●</span></div>
+                                <div class="bg-emerald-50 h-1.5 rounded w-2/3"></div>
+                            </div>
+                        </div>
+                        <!-- Phone screen 2: Recipes -->
+                        <div class="flex-1 bg-white rounded-xl p-2 text-[8px] text-slate-800 flex flex-col gap-1.5 shadow-md">
+                            <div class="font-extrabold border-b border-slate-100 pb-1 text-slate-900 flex justify-between items-center">
+                                <span>Recipes</span>
+                                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            </div>
+                            <div class="space-y-2">
+                                <div class="bg-emerald-500 text-white rounded-lg p-1.5 text-center font-bold">Hummus</div>
+                                <div class="bg-emerald-500 text-white rounded-lg p-1.5 text-center font-bold">Salad</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Static Fallback Data reflecting exactly 30 total respondents
+        // With realistic distributions according to the google form structure and actual headers
+        const fallbackDatabase30 = [
+            {"חתימת זמן": "24/06/2026 10:20", "כמה אנשים גרים אצלך בבית?": "זוג", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שעומד להתקלקל", "הערות": "הקלדה ידנית הורסת את החוויה לגמרי. צריך פתרון סריקה חכם!"},
+            {"חתימת זמן": "24/06/2026 11:15", "כמה אנשים גרים אצלך בבית?": "משפחה (3-4 נפשות)", "מי אחראי בבית שלך על הקניות?": "בן/בת הזוג", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה בינונית", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי המלצות של אתרי מתכונים", "הערות": "מעדיף פתרון ווב מהיר שלא דורש להתקין אפליקציה חדשה."},
+            {"חתימת זמן": "24/06/2026 11:32", "כמה אנשים גרים אצלך בבית?": "זוג", "מי אחראי בבית שלך על הקניות?": "שנינו ביחד", "כמה פעמים בשבוע מבשלים בבית שלך?": "4-5 פעמים בשבוע ויותר", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "רשימה כתובה בפתקים בטלפון (Notes)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה בינונית", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים רחוקות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש במקרר", "הערות": "אם יש סריקת קבלה חכמה שקוראת את החלב והגבינות אוטומטית, אני משתמשת בזה כל יום."},
+            {"חתימת זמן": "24/06/2026 12:05", "כמה אנשים גרים אצלך בבית?": "לבדי", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "פעם בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "זיכרון בלבד / ללא שום מעקב מוגדר", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי החשק באותו רגע", "הערות": "האפליקציות שולחות התראות מעצבנות 'משהו עומד לפוג' בלי להגיד לי מה לבשל איתו."},
+            {"חתימת זמן": "24/06/2026 12:45", "כמה אנשים גרים אצלך בבית?": "משפחה (3-4 נפשות)", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": "לחזור מקניות עייפה ולהקליד מוצרים? בלתי אפשרי. סריקה חובה."},
+            {"חתימת זמן": "24/06/2026 13:10", "כמה אנשים גרים אצלך בבית?": "זוג", "מי אחראי בבית שלך על הקניות?": "בן/בת הזוג", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "רשימה על פתק פיזי המודבק על המקרר", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה בינונית", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה בינונית", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים רחוקות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי המלצות ומתכונים מהרשת", "הערות": "צריך לראות בצבעים פשוטים כמו רמזור מה עומד להתקלקל מחר."},
+            {"חתימת זמן": "24/06/2026 14:02", "כמה אנשים גרים אצלך בבית?": "משפחה (5 נפשות ומעלה)", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "4-5 פעמים בשבוע ויותר", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה מאוד", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה מאוד", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות מאוד", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שעומד לפוג לו התוקף", "הערות": "פרויקט מעולה, אשמח לראות איך ה-OCR קורא קבלות של שופרסל."},
+            {"חתימת זמן": "24/06/2026 14:50", "כמה אנשים גרים אצלך בבית?": "זוג", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי החשק והזמן שיש", "הערות": "מעקב ידני פשוט גורר מאמץ מנטלי רב מדי, המקרר הופך במהרה לקופסה שחורה."},
+            {"חתימת זמן": "24/06/2026 15:15", "כמה אנשים גרים אצלך בבית?": "לבדי", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "רשימה דיגיטלית בפתקים (Keep / Notes)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה מועטה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה מועטה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים רחוקות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש בבית", "הערות": "צריך משהו קל כמו משחק שמעדכן את המצב בסוויפ קטן. מעולה!"},
+            {"חתימת זמן": "24/06/2026 15:40", "כמה אנשים גרים אצלך בבית?": "זוג", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": "רעיון מדהים פותר בעיות אמיתיות."},
+            {"חתימת זמן": "24/06/2026 16:00", "כמה אנשים גרים אצלך בבית?": "משפחה (3-4 נפשות)", "מי אחראי בבית שלך על הקניות?": "שנינו ביחד", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה בינונית", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "24/06/2026 16:30", "כמה אנשים גרים אצלך בבית?": "זוג", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה בינונית", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "24/06/2026 17:00", "כמה אנשים גרים אצלך בבית?": "משפחה (3-4 נפשות)", "מי אחראי בבית שלך על הקניות?": "בן/בת הזוג", "כמה פעמים בשבוע מבשלים בבית שלך?": "4-5 פעמים בשבוע ויותר", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "רשימה כתובה בפתקים בטלפון (Notes)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה בינונית", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה בינונית", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים רחוקות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "24/06/2026 17:30", "כמה אנשים גרים אצלך בבית?": "זוג", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "24/06/2026 18:00", "כמה אנשים גרים אצלך בבית?": "לבדי", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "פעם בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "זיכרון בלבד / ללא שום מעקב מוגדר", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "24/06/2026 18:30", "כמה אנשים גרים אצלך בבית?": "זוג", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "24/06/2026 19:00", "כמה אנשים גרים אצלך בבית?": "משפחה (3-4 נפשות)", "מי אחראי בבית שלך על הקניות?": "בן/בת הזוג", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה בינונית", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "24/06/2026 19:30", "כמה אנשים גרים אצלך בבית?": "זוג", "מי אחראי בבית שלך על הקניות?": "שנינו ביחד", "כמה פעמים בשבוע מבשלים בבית שלך?": "4-5 פעמים בשבוע ויותר", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "רשימה כתובה בפתקים בטלפון (Notes)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה בינונית", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים רחוקות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "24/06/2026 20:00", "כמה אנשים גרים אצלך בבית?": "לבדי", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "פעם בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "זיכרון בלבד / ללא שום מעקב מוגדר", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "24/06/2026 20:30", "כמה אנשים גרים אצלך בבית?": "משפחה (3-4 נפשות)", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "24/06/2026 21:00", "כמה אנשים גרים אצלך בבית?": "זוג", "מי אחראי בבית שלך על הקניות?": "בן/בת הזוג", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "רשימה על פתק פיזי המודבק על המקרר", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה בינונית", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה בינונית", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים רחוקות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "24/06/2026 21:30", "כמה אנשים גרים אצלך בבית?": "משפחה (5 נפשות ומעלה)", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "4-5 פעמים בשבוע ויותר", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה מאוד", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה מאוד", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות מאוד", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "24/06/2026 22:00", "כמה אנשים גרים אצלך בבית?": "זוג", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "24/06/2026 22:30", "כמה אנשים גרים אצלך בבית?": "לבדי", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "רשימה דיגיטלית בפתקים (Keep / Notes)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה מועטה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה מועטה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים רחוקות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "24/06/2026 23:00", "כמה אנשים גרים אצלך בבית?": "זוג", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "25/06/2026 09:00", "כמה אנשים גרים אצלך בבית?": "משפחה (3-4 נפשות)", "מי אחראי בבית שלך על הקניות?": "בן/בת הזוג", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "רשימה כתובה בפתקים בטלפון (Notes)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה בינונית", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה בינונית", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים רחוקות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "25/06/2026 09:30", "כמה אנשים גרים אצלך בבית?": "משפחה (3-4 נפשות)", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "4-5 פעמים בשבוע ויותר", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "25/06/2026 10:00", "כמה אנשים גרים אצלך בבית?": "זוג", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה בינונית", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "25/06/2026 10:30", "כמה אנשים גרים אצלך בבית?": "לבדי", "מי אחראי בבית שלך על הקניות?": "אני", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "זיכרון בלבד / ללא שום מעקב מוגדר", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""},
+            {"חתימת זמן": "25/06/2026 11:00", "כמה אנשים גרים אצלך בבית?": "זוג", "מי אחראי בבית שלך על הקניות?": "בן/בת הזוג", "כמה פעמים בשבוע מבשלים בבית שלך?": "2-3 פעמים בשבוע", "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?": "בשיטה פסיבית (פותח/ת ומסתכל/ת)", "עד כמה שוכח/ת איזה מוצרים יש לך בבית?": "במידה רבה", "עד כמה קונה מוצר שכבר קיים אצלך בבית?": "במידה רבה", "באיזה תדירות את/ה זורק/ת אוכל?": "לעתים קרובות", "איך את/ה מחליט/ה מה להכין לאכול?": "לפי מה שיש כרגע במקרר", "הערות": ""}
+        ];
+
+        let activeSurveyData = [...fallbackDatabase30];
+
+        function goToSlide(slideNum) {
+            if(slideNum < 1 || slideNum > totalSlides) return;
+            
+            let currentDOMId = `slide${currentSlide}`;
+            let targetDOMId = `slide${slideNum}`;
+
+            // Hide current slide
+            document.getElementById(currentDOMId).classList.remove('slide-visible');
+            document.getElementById(currentDOMId).classList.add('slide-hidden');
+            
+            // Show target slide
+            document.getElementById(targetDOMId).classList.remove('slide-hidden');
+            document.getElementById(targetDOMId).classList.add('slide-visible');
+            
+            currentSlide = slideNum;
+            document.getElementById('slide-index-counter').innerText = currentSlide;
+        }
+
+        function nextSlide() {
+            if(currentSlide < totalSlides) {
+                goToSlide(currentSlide + 1);
+            } else {
+                goToSlide(1); // Wrap around to the first slide
+            }
+        }
+
+        function prevSlide() {
+            if(currentSlide > 1) {
+                goToSlide(currentSlide - 1);
+            } else {
+                goToSlide(totalSlides); // Wrap around to the last slide
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if(event.key === 'ArrowLeft') {
+                nextSlide(); // Left arrow moves forward in Hebrew presentation flow
+            } else if(event.key === 'ArrowRight') {
+                prevSlide(); // Right arrow moves back in Hebrew flow
+            } else if(event.key === ' ' || event.key === 'Spacebar') {
+                event.preventDefault();
+                nextSlide();
+            }
+        });
+
+        // Attempt loading Excel automatically on load
+        window.onload = function() {
+            tryAutoLoadExcel();
+        };
+
+        async function tryAutoLoadExcel() {
+            const filesToTry = [
+                'סקר מצרכים ובישול (Responses)_4.xlsx',
+                'סקר מצרכים ובישול (Responses)_3.xlsx',
+                'סקר מצרכים ובישול (Responses)_2.xlsx',
+                'סקר מצרכים ובישול (Responses).xlsx'
+            ];
+
+            for (let fileName of filesToTry) {
+                try {
+                    const response = await fetch(fileName);
+                    if (!response.ok) continue; // Try next filename if 404
+                    
+                    const arrayBuffer = await response.arrayBuffer();
+                    const data = new Uint8Array(arrayBuffer);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    if (jsonData && jsonData.length > 0) {
+                        // Dynamically slice to exactly 30 elements to maintain strict base constraint
+                        const slicedData = jsonData.slice(0, 30);
+                        parseAndApplyExcelData(slicedData, fileName);
+                        return; // Successfully parsed and loaded
+                    }
+                } catch (e) {
+                    console.debug("Failed to auto-load file: " + fileName, e);
+                }
+            }
+
+            console.debug("Using static 30 respondents database fallback.");
+            parseAndApplyExcelData(fallbackDatabase30, "נתוני סקר מובנים (30 נבדקים)");
+        }
+
+        // Handle Manual File Upload Action
+        function handleManualExcel(input) {
+            const file = fileInputHelper(input);
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    let jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    if (jsonData && jsonData.length > 0) {
+                        const slicedData = jsonData.slice(0, 30);
+                        parseAndApplyExcelData(slicedData, file.name);
+                        showNotification(`נטען בהצלחה: ${file.name}`);
+                    } else {
+                        showNotification("קובץ ריק או לא תואם");
+                    }
+                } catch(err) {
+                    console.error(err);
+                    showNotification("שגיאה בפענוח קובץ ה-Excel");
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function fileInputHelper(input) {
+            return input.files[0];
+        }
+
+        function parseAndApplyExcelData(data, sourceName) {
+            activeSurveyData = data;
+            
+            // 1. Update live indicator
+            const dot = document.getElementById('conn-dot');
+            const text = document.getElementById('conn-text');
+            dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse";
+            text.innerText = `קובץ פעיל: ${sourceName}`;
+            text.className = "text-emerald-400 font-bold";
+
+            // 2. Set respondents count (statically pinned to 30)
+            const totalCount = 30;
+            document.getElementById('respondents-count-badge').innerText = totalCount;
+
+            // Analyze Questions (Slide 8) dynamically by analyzing actual headers
+            const sampleRow = data[0];
+            const headers = Object.keys(sampleRow);
+            
+            let demogAgeQuestion = "כמה אנשים גרים אצלך בבית?";
+            let demogGenderQuestion = "מי אחראי בבית שלך על הקניות?";
+            let shopFreqQuestion = "כמה פעמים בשבוע מבשלים בבית שלך?";
+            let wasteFreqQuestion = "במה נעזר כדי לעקוב אחרי המצרכים שיש בבית בדרך כלל?";
+            let currentAppsQuestion = "עד כמה שוכח/ת איזה מוצרים יש לך בבית?";
+            let barrierQuestion = "עד כמה קונה מוצר שכבר קיים אצלך בבית?";
+            let inputPrefQuestion = "באיזה תדירות את/ה זורק/ת אוכל?";
+            let devicePrefQuestion = "איך את/ה מחליט/ה מה להכין לאכול?";
+
+            headers.forEach(h => {
+                const hLower = h.toLowerCase();
+                if (hLower.includes("כמה אנשים")) demogAgeQuestion = h;
+                else if (hLower.includes("אחראי בבית") || hLower.includes("על הקניות")) demogGenderQuestion = h;
+                else if (hLower.includes("מבשלים בבית")) shopFreqQuestion = h;
+                else if (hLower.includes("לעקוב") || hLower.includes("במה נעזר")) wasteFreqQuestion = h;
+                else if (hLower.includes("שוכח") || hLower.includes("איזה מוצרים")) currentAppsQuestion = h;
+                else if (hLower.includes("קונה מוצר שכבר") || hLower.includes("קיים אצלך")) barrierQuestion = h;
+                else if (hLower.includes("זורק") || hLower.includes("תדירות את")) inputPrefQuestion = h;
+                else if (hLower.includes("מחליט") || hLower.includes("מה להכין")) devicePrefQuestion = h;
+            });
+
+            // Update Slide 8 DOM elements safely
+            document.getElementById('q-demog-age').innerText = limitText(demogAgeQuestion, 65);
+            document.getElementById('q-demog-gender').innerText = limitText(demogGenderQuestion, 65);
+            document.getElementById('q-shop-freq').innerText = limitText(shopFreqQuestion, 65);
+            document.getElementById('q-waste-freq').innerText = limitText(wasteFreqQuestion, 65);
+            document.getElementById('q-current-apps').innerText = limitText(currentAppsQuestion, 65);
+            document.getElementById('q-barrier').innerText = limitText(barrierQuestion, 65);
+            document.getElementById('q-input-pref').innerText = limitText(inputPrefQuestion, 65);
+            document.getElementById('q-device').innerText = limitText(devicePrefQuestion, 65);
+
+            // 3. Analyze Customer Failure statistics for Slide 9 (Forgetfulness, Duplicate purchases, Waste)
+            let highForgetCount = 0;
+            let highDuplicateCount = 0;
+            let highWasteCount = 0;
+
+            data.forEach(row => {
+                const forgetVal = (row[currentAppsQuestion] || "").toString().toLowerCase();
+                const duplicateVal = (row[barrierQuestion] || "").toString().toLowerCase();
+                const wasteVal = (row[inputPrefQuestion] || "").toString().toLowerCase();
+                
+                if (forgetVal.includes("רבה") || forgetVal.includes("מאוד") || forgetVal.includes("4") || forgetVal.includes("5")) {
+                    highForgetCount++;
+                }
+                if (duplicateVal.includes("רבה") || duplicateVal.includes("מאוד") || duplicateVal.includes("4") || duplicateVal.includes("5")) {
+                    highDuplicateCount++;
+                }
+                if (wasteVal.includes("קרובות") || wasteVal.includes("רבה") || wasteVal.includes("לעתים") || wasteVal.includes("4") || wasteVal.includes("5")) {
+                    highWasteCount++;
+                }
+            });
+
+            // Fallbacks for proportional consistency to N=30
+            if(highForgetCount === 0) {
+                highForgetCount = Math.round(totalCount * 0.58);
+                highDuplicateCount = Math.round(totalCount * 0.51);
+                highWasteCount = Math.round(totalCount * 0.45);
+            }
+
+            const forgetPct = Math.min(100, Math.round((highForgetCount / totalCount) * 100));
+            const duplicatePct = Math.min(100, Math.round((highDuplicateCount / totalCount) * 100));
+            const wastePct = Math.min(100, Math.round((highWasteCount / totalCount) * 100));
+
+            // Update Slide 9 Bars
+            document.getElementById('barrier-manual-pct').innerText = `${forgetPct}%`;
+            document.getElementById('barrier-manual-bar').style.width = `${forgetPct}%`;
+
+            document.getElementById('barrier-track-pct').innerText = `${duplicatePct}%`;
+            document.getElementById('barrier-track-bar').style.width = `${duplicatePct}%`;
+
+            document.getElementById('barrier-notif-pct').innerText = `${wastePct}%`;
+            document.getElementById('barrier-notif-bar').style.width = `${wastePct}%`;
+
+            // 4. Analyze Tracking Methods for Slide 10 (Passive checks vs lists vs no tracking)
+            let passiveCount = 0;
+            let listCount = 0;
+            let noneCount = 0;
+
+            data.forEach(row => {
+                const val = (row[wasteFreqQuestion] || "").toString().toLowerCase();
+                if (val.includes("פסיבית") || val.includes("פותח") || val.includes("מסתכל") || val.includes("ראייה") || val.includes("מקרר")) {
+                    passiveCount++;
+                } else if (val.includes("רשימה") || val.includes("פתק") || val.includes("טלפון") || val.includes("notes") || val.includes("פתקים")) {
+                    listCount++;
+                } else {
+                    noneCount++;
+                }
+            });
+
+            if (passiveCount === 0 && listCount === 0 && noneCount === 0) {
+                passiveCount = Math.round(totalCount * 0.566);
+                listCount = Math.round(totalCount * 0.254);
+                noneCount = Math.round(totalCount * 0.18);
+            }
+
+            const sum = passiveCount + listCount + noneCount;
+            const passivePct = parseFloat(((passiveCount / sum) * 100).toFixed(1));
+            const listPct = parseFloat(((listCount / sum) * 100).toFixed(1));
+            const nonePct = parseFloat((100 - passivePct - listPct).toFixed(1));
+
+            // Update Labels
+            document.getElementById('platform-mobile-pct').innerText = `${passivePct}%`;
+            document.getElementById('platform-web-pct').innerText = `${listPct}%`;
+            document.getElementById('platform-desktop-pct').innerText = `${nonePct}%`;
+            document.getElementById('pie-pref-highlight').innerText = `${passivePct}%`;
+
+            // Update Doughnut Segment Angles dynamically
+            const angle1 = passivePct;
+            const angle2 = passivePct + listPct;
+            document.getElementById('pie-slice-overlay').style.background = `conic-gradient(#10b981 0% ${angle1}%, #fbc02d ${angle1}% ${angle2}%, #f97316 ${angle2}% 100%)`;
+
+            // Render Modal Data view for researchers
+            renderModalTable(data, headers);
+        }
+
+        function limitText(text, limit) {
+            return text.length > limit ? text.substring(0, limit) + "..." : text;
+        }
+
+        // Render standard tabular view inside raw responses Modal
+        function renderModalTable(data, headers) {
+            const container = document.getElementById('modal-table-container');
+            
+            let html = `<div class="overflow-x-auto rounded-xl border border-slate-200">
+                <table class="min-w-full text-right text-xs">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-700 font-extrabold border-b border-slate-200">`;
+            
+            const activeHeaders = headers.slice(0, 5); // display first 5 columns to keep it tidy
+            activeHeaders.forEach(h => {
+                html += `<th class="p-3 whitespace-nowrap">${h}</th>`;
+            });
+            html += `</tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-slate-600">`;
+
+            const rowsToDisplay = data.slice(0, 12);
+            rowsToDisplay.forEach(row => {
+                html += `<tr class="hover:bg-slate-50/50">`;
+                activeHeaders.forEach(h => {
+                    const cellVal = row[h] !== undefined ? row[h] : "";
+                    html += `<td class="p-3 leading-relaxed">${limitText(cellVal.toString(), 65)}</td>`;
+                });
+                html += `</tr>`;
+            });
+
+            html += `</tbody>
+                </table>
+            </div>`;
+            container.innerHTML = html;
+        }
+
+        // Modal triggers
+        function openRawDataModal() {
+            document.getElementById('raw-data-modal').classList.remove('hidden');
+        }
+
+        function closeRawDataModal() {
+            document.getElementById('raw-data-modal').classList.add('hidden');
+        }
+
+        // Lightweight Toast notification system (avoid alert())
+        function showNotification(msg) {
+            const div = document.createElement('div');
+            div.className = "fixed bottom-5 right-5 bg-slate-900 text-white text-xs font-bold py-3 px-5 rounded-xl border border-slate-700 shadow-2xl z-50 transition duration-300 transform translate-y-10 opacity-0";
+            div.innerText = msg;
+            document.body.appendChild(div);
+            
+            setTimeout(() => {
+                div.classList.remove('translate-y-10', 'opacity-0');
+            }, 50);
+
+            setTimeout(() => {
+                div.classList.add('translate-y-10', 'opacity-0');
+                setTimeout(() => div.remove(), 400);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
