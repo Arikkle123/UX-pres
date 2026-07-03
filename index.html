@@ -176,9 +176,12 @@
             
             <div class="text-xs text-slate-400 bg-slate-900/60 rounded-lg px-2.5 py-1 flex items-center gap-2 border border-slate-800">
                 <span class="text-slate-500">שקופית</span>
-                <span id="slide-index-counter" class="text-white font-bold text-sm">1</span>
+                <input type="number" id="slide-index-counter" min="1" max="24" value="1" title="עבור לשקופית (Enter)"
+                    class="w-10 text-center text-white font-bold text-sm bg-slate-800 border border-slate-600 rounded px-1 py-0.5 focus:outline-none focus:border-emerald-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    onkeydown="if(event.key==='Enter'){event.preventDefault();jumpToSlideFromInput();}"
+                    onblur="jumpToSlideFromInput()">
                 <span class="text-slate-500">מתוך</span>
-                <span class="text-slate-400 font-bold" id="total-slides-count">28</span>
+                <span class="text-slate-400 font-bold" id="total-slides-count">24</span>
             </div>
         </div>
     </div>
@@ -1198,6 +1201,7 @@
         const totalSlides = 24; 
         
         document.getElementById('total-slides-count').innerText = totalSlides;
+        document.getElementById('slide-index-counter').max = totalSlides;
 
         // Structured SVG fallback generator to resolve local path failures on Slide 3
         function showKitcheSvgFallback(imgElement) {
@@ -1284,8 +1288,23 @@
 
         let activeSurveyData = [...fallbackDatabase30];
 
+        function updateSlideCounterDisplay() {
+            document.getElementById('slide-index-counter').value = currentSlide;
+        }
+
+        function jumpToSlideFromInput() {
+            const input = document.getElementById('slide-index-counter');
+            const slideNum = parseInt(input.value, 10);
+            if (!isNaN(slideNum) && slideNum >= 1 && slideNum <= totalSlides && document.getElementById(`slide${slideNum}`)) {
+                goToSlide(slideNum);
+            } else {
+                updateSlideCounterDisplay();
+            }
+        }
+
         function goToSlide(slideNum) {
             if(slideNum < 1 || slideNum > totalSlides) return;
+            if(!document.getElementById(`slide${slideNum}`)) return;
             
             let currentDOMId = `slide${currentSlide}`;
             let targetDOMId = `slide${slideNum}`;
@@ -1299,7 +1318,7 @@
             document.getElementById(targetDOMId).classList.add('slide-visible');
             
             currentSlide = slideNum;
-            document.getElementById('slide-index-counter').innerText = currentSlide;
+            updateSlideCounterDisplay();
         }
 
         function nextSlide() {
@@ -1319,6 +1338,9 @@
         }
 
         document.addEventListener('keydown', function(event) {
+            const activeTag = document.activeElement?.tagName;
+            if (activeTag === 'INPUT' || activeTag === 'TEXTAREA') return;
+
             if(event.key === 'ArrowLeft') {
                 nextSlide(); // Left arrow moves forward in Hebrew presentation flow
             } else if(event.key === 'ArrowRight') {
