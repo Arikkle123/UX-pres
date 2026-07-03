@@ -49,7 +49,30 @@
         body {
             background-color: #0b0f19;
             font-family: 'Heebo', sans-serif;
-            overflow-x: hidden;
+            overflow: hidden;
+        }
+
+        #presentation-viewport {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        #presentation-scaler {
+            width: 1280px;
+            height: 720px;
+            transform-origin: center center;
+            flex-shrink: 0;
+        }
+
+        #slides-wrapper {
+            width: 1280px;
+            height: 720px;
+            position: relative;
         }
 
         .slide-container {
@@ -59,10 +82,12 @@
             box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.5);
             display: flex;
             flex-direction: column;
-            height: 720px;
             width: 1280px;
+            height: 720px;
             padding: 45px 70px;
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 0;
             overflow: hidden;
             justify-content: flex-start;
             transition: opacity 0.4s ease-in-out, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
@@ -155,10 +180,10 @@
         }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center min-h-screen p-4">
+<body class="flex flex-col h-screen overflow-hidden p-2 sm:p-4">
 
     <!-- Top Status and Navigation Menu -->
-    <div class="w-full max-w-[1280px] mb-3 flex justify-between items-center px-4">
+    <div id="presentation-top-bar" class="w-full mb-2 sm:mb-3 flex justify-between items-center px-2 sm:px-4 shrink-0">
         <div class="flex items-center gap-3">
             <span class="text-white text-sm font-semibold tracking-wide bg-gradient-to-r from-culinary-600 to-accent-500 px-3 py-1 rounded-full shadow-md shadow-emerald-950/20">מה במקרר</span>
             <div id="live-connection-indicator" class="flex items-center gap-2 text-xs text-slate-400 border border-slate-700/80 bg-slate-800/50 rounded-full px-3 py-1">
@@ -187,7 +212,9 @@
     </div>
 
     <!-- MAIN SLIDES CONTAINER -->
-    <div id="slides-wrapper" class="relative">
+    <div id="presentation-viewport">
+        <div id="presentation-scaler">
+            <div id="slides-wrapper" class="relative">
 
         <!-- SLIDE 1: COVER SLIDE -->
         <div class="slide-container slide-visible" id="slide1">
@@ -1154,9 +1181,11 @@
         </div>
 
     </div>
+        </div>
+    </div>
 
     <!-- Navigation Buttons Under Presentation -->
-    <div class="w-full max-w-[1280px] mt-3 flex justify-between items-center px-4">
+    <div id="presentation-bottom-nav" class="w-full mt-2 sm:mt-3 flex justify-between items-center px-2 sm:px-4 shrink-0">
         <button onclick="prevSlide()" class="bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-5 rounded-xl border border-slate-700 transition flex items-center gap-2 shadow-md">
             <i class="fa-solid fa-arrow-right"></i>
             <span>שקופית קודמת</span>
@@ -1287,6 +1316,27 @@
         ];
 
         let activeSurveyData = [...fallbackDatabase30];
+
+        const SLIDE_WIDTH = 1280;
+        const SLIDE_HEIGHT = 720;
+
+        function fitPresentationToScreen() {
+            const scaler = document.getElementById('presentation-scaler');
+            const topBar = document.getElementById('presentation-top-bar');
+            const bottomNav = document.getElementById('presentation-bottom-nav');
+            if (!scaler || !topBar || !bottomNav) return;
+
+            const horizontalPadding = 16;
+            const verticalPadding = 16;
+            const availableWidth = window.innerWidth - horizontalPadding;
+            const availableHeight = window.innerHeight - topBar.offsetHeight - bottomNav.offsetHeight - verticalPadding;
+            const scale = Math.min(availableWidth / SLIDE_WIDTH, availableHeight / SLIDE_HEIGHT);
+
+            scaler.style.transform = `scale(${scale})`;
+        }
+
+        window.addEventListener('resize', fitPresentationToScreen);
+        window.addEventListener('load', fitPresentationToScreen);
 
         function updateSlideCounterDisplay() {
             document.getElementById('slide-index-counter').value = currentSlide;
