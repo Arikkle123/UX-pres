@@ -463,7 +463,7 @@
                 <!-- Header -->
                 <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
                     <div class="flex items-center gap-2">
-                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1 w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
+                        <button onclick="navigateBack()" class="text-slate-600 hover:text-slate-900 p-1 w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
                         <h2 class="font-bold text-slate-800 text-lg">פרופיל אישי והעדפות</h2>
                     </div>
                     <button onclick="toggleSideMenu()" class="text-slate-600"><i class="fa-solid fa-bars"></i></button>
@@ -550,7 +550,7 @@
                 <!-- Footer buttons aligned to bottom -->
                 <div class="absolute bottom-0 inset-x-0 p-4 bg-white border-t border-slate-100 flex gap-3 z-10 shrink-0">
                     <button onclick="savePreferences()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-md transition text-center text-sm btn-active">אישור</button>
-                    <button onclick="navigate('home')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition text-center text-sm btn-active">ביטול</button>
+                    <button onclick="navigateBack()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition text-center text-sm btn-active">ביטול</button>
                 </div>
             </div>
 
@@ -1073,6 +1073,7 @@
         let inventory = [...INITIAL_INVENTORY];
         let shoppingList = [...INITIAL_SHOPPING];
         let currentScreen = 'home';
+        let previousScreen = 'home';
         let currentFilterCategory = 'all';
         let activeSortOption = 'highuse';
         let activeRecipe = "עוגת שוקולד טבעונית";
@@ -1122,6 +1123,9 @@
         // Screen Navigation Router
         function navigate(screenId) {
             try {
+                if (screenId !== currentScreen) {
+                    previousScreen = currentScreen;
+                }
                 currentScreen = screenId;
                 
                 document.querySelectorAll('.page-view').forEach(p => {
@@ -1155,6 +1159,10 @@
                 console.warn(err);
                 showFeatureNotReady();
             }
+        }
+
+        function navigateBack() {
+            navigate(previousScreen || 'home');
         }
 
         // Side Menu drawer actions
@@ -2280,7 +2288,7 @@
 
         function savePreferences() {
             showToast("העדפות הפרופיל שלך עודכנו בהצלחה!");
-            navigate('recipes');
+            navigateBack();
         }
 
         function setRecipePantryMode(isPantryOnly) {
