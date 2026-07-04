@@ -141,6 +141,7 @@
         #slide21.slide-container {
             padding: 14px 22px;
             position: relative;
+            overflow: visible;
         }
 
         #slide21 .prototype-header {
@@ -158,22 +159,23 @@
 
         #slide21 .prototype-embed {
             position: absolute;
-            inset: 14px 22px;
+            inset: 8px 22px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             justify-content: center;
-            overflow: hidden;
+            overflow: visible;
             direction: ltr;
         }
 
         #slide21 .prototype-scale-host {
             flex-shrink: 0;
+            overflow: hidden;
         }
 
         #slide21 .prototype-iframe-shell {
             width: 420px;
             height: 880px;
-            transform-origin: center center;
+            transform-origin: top left;
             border-radius: 48px;
             overflow: hidden;
             box-shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.35);
@@ -1357,9 +1359,12 @@
             if (availableWidth === 0 || availableHeight === 0) return;
 
             const scale = Math.min(availableWidth / PROTOTYPE_WIDTH, availableHeight / PROTOTYPE_HEIGHT);
+            const scaledWidth = PROTOTYPE_WIDTH * scale;
+            const scaledHeight = PROTOTYPE_HEIGHT * scale;
+
+            host.style.width = `${scaledWidth}px`;
+            host.style.height = `${scaledHeight}px`;
             shell.style.transform = `scale(${scale})`;
-            host.style.width = `${PROTOTYPE_WIDTH * scale}px`;
-            host.style.height = `${PROTOTYPE_HEIGHT * scale}px`;
         }
 
         window.addEventListener('resize', fitPresentationToScreen);
