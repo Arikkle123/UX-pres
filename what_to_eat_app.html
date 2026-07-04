@@ -142,8 +142,7 @@
                             <i class="fa-solid fa-user text-lg"></i>
                         </div>
                         <div>
-                            <p class="text-xs text-slate-500">שלום עופר,</p>
-                            <h2 class="font-bold text-slate-800 text-base">הי עופר! מה אוכלים היום?</h2>
+                            <h2 class="font-bold text-slate-800 text-base">היי עופר! מה אוכלים היום?</h2>
                         </div>
                     </div>
                     <button onclick="toggleSideMenu()" class="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-700 rounded-xl border border-slate-200 hover:bg-slate-100 transition">
@@ -372,14 +371,11 @@
                     </div>
 
                     <!-- Trigger mock scanner action -->
-                    <div class="w-full space-y-4 pt-4 shrink-0">
+                    <div class="w-full pt-4 shrink-0">
                         <button onclick="startMockScanProcess()" class="w-full bg-emerald-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-emerald-500 active:scale-98 transition btn-active flex items-center justify-center gap-2">
                             <i class="fa-solid fa-camera"></i>
                             <span>סרוק קבלה מהסופרמרקט</span>
                         </button>
-                        <p class="text-[11px] text-slate-400 text-center leading-relaxed">
-                            המערכת תסרוק, תפענח את הפריטים ותציג אותם לאישורך המהיר בממשק משחקי (סווייפ) כדי למנוע הזנה ידנית מייגעת.
-                        </p>
                     </div>
                 </div>
             </div>
@@ -997,42 +993,67 @@
         let pendingScanItems = [];
         let completedScannedList = [];
 
+        let swipeDragCleanup = null;
+        let swipeProcessing = false;
+        const FEATURE_NOT_READY_MSG = "פיצ'ר זה טרם פותח בפרוטוטייפ";
+
+        function showFeatureNotReady() {
+            showToast(FEATURE_NOT_READY_MSG);
+        }
+
+        window.addEventListener('error', function() {
+            if (typeof showToast === 'function') {
+                showToast(FEATURE_NOT_READY_MSG);
+            }
+        });
+
+        window.addEventListener('unhandledrejection', function() {
+            if (typeof showToast === 'function') {
+                showToast(FEATURE_NOT_READY_MSG);
+            }
+        });
+
         window.onload = function() {
-            renderInventory();
-            renderShoppingList();
-            renderPantryCounts();
-            
-            // Auto hide splash or setup initial view
-            navigate('home');
+            try {
+                renderInventory();
+                renderShoppingList();
+                renderPantryCounts();
+                navigate('home');
+            } catch (err) {
+                console.warn(err);
+                showFeatureNotReady();
+            }
         };
 
 
         // Screen Navigation Router
         function navigate(screenId) {
-            currentScreen = screenId;
-            
-            // Hide all pages
-            document.querySelectorAll('.page-view').forEach(p => {
-                p.classList.add('hidden');
-            });
+            try {
+                currentScreen = screenId;
+                
+                document.querySelectorAll('.page-view').forEach(p => {
+                    p.classList.add('hidden');
+                });
 
-            // Show current page
-            const activePage = document.getElementById(`screen-${screenId}`);
-            if (activePage) {
-                activePage.classList.remove('hidden');
-            }
+                const activePage = document.getElementById(`screen-${screenId}`);
+                if (activePage) {
+                    activePage.classList.remove('hidden');
+                }
 
-            // Close menu drawer just in case
-            closeSideMenu();
+                closeSideMenu();
 
-            // Screen custom init methods
-            if (screenId === 'inventory') {
-                renderInventory();
-            } else if (screenId === 'shopping-list') {
-                renderShoppingList();
-                document.getElementById('shopping-autocomplete-list').classList.add('hidden');
-            } else if (screenId === 'recipes') {
-                renderRecipesFeed();
+                if (screenId === 'inventory') {
+                    renderInventory();
+                } else if (screenId === 'shopping-list') {
+                    renderShoppingList();
+                    const autocomplete = document.getElementById('shopping-autocomplete-list');
+                    if (autocomplete) autocomplete.classList.add('hidden');
+                } else if (screenId === 'recipes') {
+                    renderRecipesFeed();
+                }
+            } catch (err) {
+                console.warn(err);
+                showFeatureNotReady();
             }
         }
 
@@ -1075,7 +1096,8 @@
 
         function renderPantryCounts() {
             const count = inventory.reduce((acc, curr) => acc + curr.quantity, 0);
-            document.getElementById('home-inventory-count').innerText = `${count} מוצרים`;
+            const countEl = document.getElementById('home-inventory-count');
+            if (countEl) countEl.innerText = `${count} מוצרים`;
         }
 
 
@@ -1114,6 +1136,7 @@
 
         function renderInventory() {
             const listContainer = document.getElementById('inventory-list-container');
+            if (!listContainer) return;
             listContainer.innerHTML = '';
 
             let filteredList = [...inventory];
@@ -1187,14 +1210,17 @@
             }
         }
 
-        function selectCategoryFilter(cat) {
+        function selectCategoryFilter(cat, pillEl) {
             currentFilterCategory = cat;
+            const target = pillEl || (typeof event !== 'undefined' ? event.target : null);
+            if (!target) return;
+
             document.querySelectorAll('.category-pill').forEach(pill => {
                 pill.classList.remove('active', 'bg-emerald-600', 'text-white', 'border-emerald-600');
                 pill.classList.add('bg-slate-100', 'text-slate-600', 'border-slate-200');
             });
-            event.target.classList.add('active', 'bg-emerald-600', 'text-white', 'border-emerald-600');
-            event.target.classList.remove('bg-slate-100', 'text-slate-600', 'border-slate-200');
+            target.classList.add('active', 'bg-emerald-600', 'text-white', 'border-emerald-600');
+            target.classList.remove('bg-slate-100', 'text-slate-600', 'border-slate-200');
             renderInventory();
         }
 
@@ -1257,15 +1283,17 @@
             }, 300);
         }
 
-        function applySort(option) {
+        function applySort(option, buttonEl) {
             activeSortOption = option;
             
-            // Highlight checkmark visually
+            const target = buttonEl || (typeof event !== 'undefined' ? event.currentTarget : null);
             document.querySelectorAll('#sorting-modal .check-mark').forEach(span => {
                 span.classList.add('hidden');
             });
-            
-            event.currentTarget.querySelector('.check-mark').classList.remove('hidden');
+            if (target) {
+                const checkMark = target.querySelector('.check-mark');
+                if (checkMark) checkMark.classList.remove('hidden');
+            }
             
             closeSortingModal();
             renderInventory();
@@ -1355,6 +1383,11 @@
 
 
         function setupDragGestures() {
+            if (swipeDragCleanup) {
+                swipeDragCleanup();
+                swipeDragCleanup = null;
+            }
+
             const card = document.getElementById('active-swipe-card');
             if (!card) return;
 
@@ -1362,66 +1395,76 @@
             let currentX = 0;
             let isDragging = false;
 
-            // Mouse / Touch Event Bindings
-            card.addEventListener('mousedown', startDrag);
-            card.addEventListener('touchstart', startDrag);
-
-            window.addEventListener('mousemove', drag);
-            window.addEventListener('touchmove', drag);
-
-            window.addEventListener('mouseup', endDrag);
-            window.addEventListener('touchend', endDrag);
-
-            function startDrag(e) {
+            const startDrag = (e) => {
                 isDragging = true;
-                startX = e.clientX || e.touches[0].clientX;
+                startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
                 card.style.transition = 'none';
-            }
+            };
 
-            function drag(e) {
+            const drag = (e) => {
                 if (!isDragging) return;
-                currentX = (e.clientX || (e.touches && e.touches[0].clientX)) - startX;
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                if (clientX == null) return;
+                currentX = clientX - startX;
                 
-                // Tilt rotation based on drag distance
                 const rotation = currentX * 0.08;
                 card.style.transform = `translateX(${currentX}px) rotate(${rotation}deg)`;
 
-                // Color tint card based on approve/reject side
                 if (currentX > 30) {
-                    card.style.backgroundColor = '#ecfdf5'; // Greenish tint
+                    card.style.backgroundColor = '#ecfdf5';
                 } else if (currentX < -30) {
-                    card.style.backgroundColor = '#fff5f5'; // Reddish tint
+                    card.style.backgroundColor = '#fff5f5';
                 } else {
                     card.style.backgroundColor = '#ffffff';
                 }
-            }
+            };
 
-            function endDrag() {
+            const endDrag = () => {
                 if (!isDragging) return;
                 isDragging = false;
                 card.style.transition = 'transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease';
 
                 if (currentX > 100) {
-                    // Approved Swipe Right
                     card.style.transform = 'translateX(300px) rotate(30deg)';
                     card.style.opacity = '0';
                     setTimeout(() => handleSwipeAction(true), 150);
                 } else if (currentX < -100) {
-                    // Rejected Swipe Left
                     card.style.transform = 'translateX(-300px) rotate(-30deg)';
                     card.style.opacity = '0';
                     setTimeout(() => handleSwipeAction(false), 150);
                 } else {
-                    // Rebound back to center
                     card.style.transform = 'none';
                     card.style.backgroundColor = '#ffffff';
                 }
                 currentX = 0;
-            }
+            };
+
+            card.addEventListener('mousedown', startDrag);
+            card.addEventListener('touchstart', startDrag, { passive: true });
+            window.addEventListener('mousemove', drag);
+            window.addEventListener('touchmove', drag, { passive: true });
+            window.addEventListener('mouseup', endDrag);
+            window.addEventListener('touchend', endDrag);
+
+            swipeDragCleanup = () => {
+                card.removeEventListener('mousedown', startDrag);
+                card.removeEventListener('touchstart', startDrag);
+                window.removeEventListener('mousemove', drag);
+                window.removeEventListener('touchmove', drag);
+                window.removeEventListener('mouseup', endDrag);
+                window.removeEventListener('touchend', endDrag);
+            };
         }
 
         function handleSwipeAction(isApproved) {
+            if (swipeProcessing || pendingScanItems.length === 0) return;
+            swipeProcessing = true;
+
             const currentItem = pendingScanItems.shift();
+            if (!currentItem) {
+                swipeProcessing = false;
+                return;
+            }
             
             if (isApproved) {
                 completedScannedList.push(currentItem);
@@ -1430,13 +1473,14 @@
                 showToast(`נדחה: ${currentItem.name}`);
             }
 
-            // Next card render
+            swipeProcessing = false;
             renderSwipeCardStack();
         }
 
 
         function renderShoppingList() {
             const container = document.getElementById('shopping-list-container');
+            if (!container) return;
             container.innerHTML = '';
 
             if (shoppingList.length === 0) {
@@ -1467,6 +1511,7 @@
 
             // Render smart recommendations
             const recContainer = document.getElementById('smart-shopping-recommendations');
+            if (!recContainer) return;
             recContainer.innerHTML = '';
 
             // Derive auto recommendations based on expired/waning pantry items
@@ -1605,7 +1650,7 @@
 
         function renderRecipesFeed() {
             const favoritesList = document.getElementById('favorites-recipes-list');
-            const prefCategoryWrapper = document.getElementById('preferences-category-wrapper');
+            if (!favoritesList) return;
             favoritesList.innerHTML = '';
 
             let hasFavorites = false;
@@ -1649,52 +1694,58 @@
 
         function openRecipeDetail(recipeTitle) {
             const recipe = RECIPES_DATABASE[recipeTitle];
-            if (!recipe) return;
+            if (!recipe) {
+                showFeatureNotReady();
+                return;
+            }
 
             activeRecipe = recipeTitle;
 
-            // Fill text elements matching design wireframes
-            document.getElementById('detail-recipe-title').innerText = recipe.title;
-            document.getElementById('detail-recipe-desc').innerText = recipe.desc;
+            const titleEl = document.getElementById('detail-recipe-title');
+            const descEl = document.getElementById('detail-recipe-desc');
+            if (titleEl) titleEl.innerText = recipe.title;
+            if (descEl) descEl.innerText = recipe.desc || '';
 
-            // Setup favorite heart state
             const favBtn = document.getElementById('recipe-fav-btn');
-            const icon = favBtn.querySelector('i');
-            if (recipe.favorite) {
-                icon.className = 'fa-solid fa-heart text-rose-500';
-            } else {
-                icon.className = 'fa-regular fa-heart text-slate-500';
+            if (favBtn) {
+                const icon = favBtn.querySelector('i');
+                if (icon) {
+                    icon.className = recipe.favorite
+                        ? 'fa-solid fa-heart text-rose-500'
+                        : 'fa-regular fa-heart text-slate-500';
+                }
             }
 
-            // Ingredients list generator
             const ingContainer = document.getElementById('recipe-ingredients-checklist');
-            ingContainer.innerHTML = '';
-            recipe.ingredients.forEach((ing, index) => {
-                // Cross check if item is owned in inventory
-                const isOwned = inventory.some(p => p.name.includes(ing.name));
-                const iconHTML = isOwned 
-                    ? `<i class="fa-solid fa-circle-check text-emerald-500"></i>` 
-                    : `<button onclick="addIngredientToCart('${ing.name}', '${ing.qty}')" class="text-slate-300 hover:text-emerald-600 transition p-1 text-sm"><i class="fa-solid fa-cart-plus"></i></button>`;
+            if (ingContainer) {
+                ingContainer.innerHTML = '';
+                (recipe.ingredients || []).forEach((ing) => {
+                    const isOwned = inventory.some(p => p.name.includes(ing.name));
+                    const iconHTML = isOwned 
+                        ? `<i class="fa-solid fa-circle-check text-emerald-500"></i>` 
+                        : `<button onclick="addIngredientToCart('${ing.name}', '${ing.qty}')" class="text-slate-300 hover:text-emerald-600 transition p-1 text-sm"><i class="fa-solid fa-cart-plus"></i></button>`;
 
-                ingContainer.innerHTML += `
-                    <div class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
-                        <span class="text-xs font-semibold text-slate-700 ${isOwned ? 'line-through text-slate-400' : ''}">${ing.qty} ${ing.name}</span>
-                        ${iconHTML}
-                    </div>
-                `;
-            });
+                    ingContainer.innerHTML += `
+                        <div class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+                            <span class="text-xs font-semibold text-slate-700 ${isOwned ? 'line-through text-slate-400' : ''}">${ing.qty} ${ing.name}</span>
+                            ${iconHTML}
+                        </div>
+                    `;
+                });
+            }
 
-            // Directions steps list generator
             const instContainer = document.getElementById('recipe-instructions-list');
-            instContainer.innerHTML = '';
-            recipe.instructions.forEach((inst, idx) => {
-                instContainer.innerHTML += `
-                    <div class="flex gap-3">
-                        <span class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">${idx + 1}</span>
-                        <p class="text-xs text-slate-600 leading-relaxed pt-0.5">${inst}</p>
-                    </div>
-                `;
-            });
+            if (instContainer) {
+                instContainer.innerHTML = '';
+                (recipe.instructions || []).forEach((inst, idx) => {
+                    instContainer.innerHTML += `
+                        <div class="flex gap-3">
+                            <span class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">${idx + 1}</span>
+                            <p class="text-xs text-slate-600 leading-relaxed pt-0.5">${inst}</p>
+                        </div>
+                    `;
+                });
+            }
 
             navigate('recipe-detail');
         }
@@ -1717,6 +1768,10 @@
 
         function addAllMissingToCart() {
             const recipe = RECIPES_DATABASE[activeRecipe];
+            if (!recipe || !recipe.ingredients) {
+                showFeatureNotReady();
+                return;
+            }
             let count = 0;
             recipe.ingredients.forEach(ing => {
                 const isOwned = inventory.some(p => p.name.includes(ing.name));
@@ -1763,11 +1818,16 @@
         }
 
         function handleRecipeRating(loved) {
+            const recipe = RECIPES_DATABASE[activeRecipe];
+            if (!recipe) {
+                showFeatureNotReady();
+                return;
+            }
             if (loved) {
-                RECIPES_DATABASE[activeRecipe].favorite = true;
+                recipe.favorite = true;
                 showToast("איזה כיף שאהבת! המתכון יישמר בקטגוריית העדפות");
             } else {
-                RECIPES_DATABASE[activeRecipe].favorite = false;
+                recipe.favorite = false;
                 showToast("נרשם. נציע לך פחות מתכונים דומים בהמשך");
             }
             navigate('recipes');
@@ -1814,4 +1874,3 @@
     </script>
 </body>
 </html>
-```
