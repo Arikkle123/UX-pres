@@ -138,6 +138,41 @@
             object-position: center;
         }
 
+        #slide21.slide-container {
+            padding: 22px 40px 16px;
+        }
+
+        #slide21 .slide-title {
+            font-size: 28px;
+            margin-bottom: 4px;
+        }
+
+        #slide21 .prototype-embed {
+            flex-grow: 1;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #slide21 .prototype-iframe-shell {
+            width: 420px;
+            height: 880px;
+            flex-shrink: 0;
+            transform-origin: center center;
+            border-radius: 48px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.35);
+        }
+
+        #slide21 .prototype-iframe {
+            width: 420px;
+            height: 880px;
+            border: none;
+            display: block;
+        }
+
         .smartphone-frame {
             width: 290px;
             height: 540px;
@@ -1048,28 +1083,13 @@
             </div>
         </div>
 
-        <!-- SLIDE 22: APP MOCKUP SCREENS (PLACEHOLDER) -->
-        <div class="slide-container slide-hidden slide-template" id="slide21">
-            <h2 class="slide-title">מסכי אב-הטיפוס – תצוגה מקדימה</h2>
-            <div class="flex flex-col justify-center flex-grow">
-                <p class="text-sm text-slate-500 text-right mb-6">מקום להעלאת צילומי מסך מפיגמה – סריקה, אישור, מלאי ומתכונים.</p>
-                <div class="grid grid-cols-4 gap-4">
-                    <div class="bg-white border border-dashed border-amber-400 p-4 rounded-xl text-center">
-                        <i class="fa-solid fa-camera text-amber-500 text-2xl mb-2"></i>
-                        <h4 class="font-bold text-slate-800 text-sm">סריקה (OCR)</h4>
-                    </div>
-                    <div class="bg-white border border-dashed border-amber-400 p-4 rounded-xl text-center">
-                        <i class="fa-solid fa-hand-pointer text-amber-500 text-2xl mb-2"></i>
-                        <h4 class="font-bold text-slate-800 text-sm">אישור (Swipe)</h4>
-                    </div>
-                    <div class="bg-white border border-dashed border-amber-400 p-4 rounded-xl text-center">
-                        <i class="fa-solid fa-egg text-amber-500 text-2xl mb-2"></i>
-                        <h4 class="font-bold text-slate-800 text-sm">המקרר שלי</h4>
-                    </div>
-                    <div class="bg-white border border-dashed border-amber-400 p-4 rounded-xl text-center">
-                        <i class="fa-solid fa-bowl-food text-amber-500 text-2xl mb-2"></i>
-                        <h4 class="font-bold text-slate-800 text-sm">מתכונים</h4>
-                    </div>
+        <!-- SLIDE 21: PROTOTYPE -->
+        <div class="slide-container slide-hidden" id="slide21">
+            <h2 class="slide-title">פרוטוטייפ</h2>
+            <p class="text-sm text-slate-500 font-bold text-right -mt-1 mb-2">האפליקציה לשימוש</p>
+            <div class="prototype-embed">
+                <div class="prototype-iframe-shell" id="prototype-iframe-shell">
+                    <iframe class="prototype-iframe" src="what_to_eat_app.html?embed=1" title="פרוטוטייפ - מה במקרר"></iframe>
                 </div>
             </div>
         </div>
@@ -1303,6 +1323,25 @@
             const scale = Math.min(availableWidth / SLIDE_WIDTH, availableHeight / SLIDE_HEIGHT);
 
             scaler.style.transform = `scale(${scale})`;
+            scalePrototypeIframe();
+        }
+
+        const PROTOTYPE_WIDTH = 420;
+        const PROTOTYPE_HEIGHT = 880;
+
+        function scalePrototypeIframe() {
+            const embed = document.querySelector('#slide21 .prototype-embed');
+            const shell = document.getElementById('prototype-iframe-shell');
+            if (!embed || !shell) return;
+
+            const availableWidth = embed.clientWidth;
+            const availableHeight = embed.clientHeight;
+            if (availableWidth === 0 || availableHeight === 0) return;
+
+            const scale = Math.min(availableWidth / PROTOTYPE_WIDTH, availableHeight / PROTOTYPE_HEIGHT, 1);
+            shell.style.transform = `scale(${scale})`;
+            embed.style.width = `${PROTOTYPE_WIDTH * scale}px`;
+            embed.style.height = `${PROTOTYPE_HEIGHT * scale}px`;
         }
 
         window.addEventListener('resize', fitPresentationToScreen);
@@ -1339,6 +1378,9 @@
             
             currentSlide = slideNum;
             updateSlideCounterDisplay();
+            if (slideNum === 21) {
+                requestAnimationFrame(scalePrototypeIframe);
+            }
         }
 
         function nextSlide() {

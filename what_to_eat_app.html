@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מה במקרר - What to Eat</title>
+    <script>
+        if (new URLSearchParams(window.location.search).get('embed') === '1') {
+            document.documentElement.classList.add('embed-mode');
+        }
+    </script>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts for premium Hebrew typography -->
@@ -41,6 +46,16 @@
         /* Ripple & hover effects for app buttons */
         .btn-active:active {
             transform: scale(0.96);
+        }
+        html.embed-mode body {
+            min-height: 0 !important;
+            height: 880px;
+            width: 420px;
+            margin: 0;
+            padding: 0 !important;
+            overflow: hidden;
+            background: transparent;
+            display: block;
         }
     </style>
 </head>
