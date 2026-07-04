@@ -47,6 +47,27 @@
         .btn-active:active {
             transform: scale(0.96);
         }
+        .inventory-swipe-row {
+            position: relative;
+            overflow: hidden;
+        }
+        .inventory-swipe-action {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            width: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #cbd5e1;
+        }
+        .inventory-swipe-content {
+            position: relative;
+            z-index: 1;
+            transition: transform 0.2s ease;
+            touch-action: pan-y;
+        }
         html.embed-mode body {
             min-height: 0 !important;
             height: 880px;
@@ -88,7 +109,7 @@
             <!-- Side Navigation Menu (As seen in UX-WF-A1_Menu drop down.png) -->
             <div id="side-menu" class="absolute inset-y-0 right-0 w-4/5 bg-white z-40 transform translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
                 <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                    <h3 class="font-bold text-lg text-slate-800">כותרת תפריט</h3>
+                    <h3 class="font-bold text-lg text-slate-800">תפריט</h3>
                     <button onclick="toggleSideMenu()" class="text-slate-500 hover:text-slate-800 p-2">
                         <i class="fa-solid fa-arrow-left text-lg"></i>
                     </button>
@@ -136,7 +157,7 @@
             <!-- SCREEN 1: HOME SCREEN (UX-WF-A1_Home screen.png) -->
             <div id="screen-home" class="page-view flex flex-col h-full overflow-y-auto no-scrollbar">
                 <!-- Header -->
-                <div class="bg-white px-5 py-4 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10">
+                <div class="bg-white px-5 py-4 border-b border-slate-100 sticky top-0 z-10">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 overflow-hidden border border-slate-200 shadow-inner">
                             <i class="fa-solid fa-user text-lg"></i>
@@ -145,9 +166,6 @@
                             <h2 class="font-bold text-slate-800 text-base">היי עופר! מה אוכלים היום?</h2>
                         </div>
                     </div>
-                    <button onclick="toggleSideMenu()" class="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-700 rounded-xl border border-slate-200 hover:bg-slate-100 transition">
-                        <i class="fa-solid fa-bars text-lg"></i>
-                    </button>
                 </div>
 
                 <!-- Main Grid Navigation Cards -->
@@ -165,7 +183,7 @@
                         <div class="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 mb-3 group-hover:bg-amber-500 group-hover:text-white transition shadow-sm">
                             <i class="fa-solid fa-kitchen-set text-2xl"></i>
                         </div>
-                        <span class="font-bold text-slate-800 text-sm">מלאי במקרר</span>
+                        <span class="font-bold text-slate-800 text-sm">מלאי</span>
                     </button>
 
                     <!-- Recipes Button -->
@@ -187,7 +205,7 @@
 
                 <!-- Live stats as seen in wireframe -->
                 <div class="mx-4 mb-6 p-4 bg-slate-800 rounded-2xl text-white shadow-lg space-y-3">
-                    <h3 class="font-bold text-sm text-slate-300 tracking-wider">סטטיסטיקה ומצב שבועי</h3>
+                    <h3 class="font-bold text-sm text-slate-300 tracking-wider">סטטוס נוכחי</h3>
                     
                     <div class="grid grid-cols-2 gap-4 pt-1">
                         <div class="border-l border-slate-700/60 pl-2">
@@ -228,7 +246,7 @@
                 <!-- Header -->
                 <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
                     <div class="flex items-center gap-2">
-                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1"><i class="fa-solid fa-arrow-right text-lg"></i></button>
+                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1 w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
                         <h2 class="font-bold text-slate-800 text-lg">מה יש בבית</h2>
                     </div>
                     <div class="flex items-center gap-2">
@@ -313,7 +331,7 @@
                 <!-- Header -->
                 <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
                     <div class="flex items-center gap-2">
-                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1"><i class="fa-solid fa-arrow-right text-lg"></i></button>
+                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1 w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
                         <h2 class="font-bold text-slate-800 text-lg">סריקת קוד מוצר / קבלה</h2>
                     </div>
                     <button onclick="toggleSideMenu()" class="text-slate-600"><i class="fa-solid fa-bars"></i></button>
@@ -418,7 +436,7 @@
                 <!-- Header -->
                 <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
                     <div class="flex items-center gap-2">
-                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1"><i class="fa-solid fa-arrow-right text-lg"></i></button>
+                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1 w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
                         <h2 class="font-bold text-slate-800 text-lg">פרופיל אישי והעדפות</h2>
                     </div>
                     <button onclick="toggleSideMenu()" class="text-slate-600"><i class="fa-solid fa-bars"></i></button>
@@ -515,7 +533,7 @@
                 <!-- Header -->
                 <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
                     <div class="flex items-center gap-2">
-                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1"><i class="fa-solid fa-arrow-right text-lg"></i></button>
+                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1 w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
                         <h2 class="font-bold text-slate-800 text-lg">מה אוכלים היום?</h2>
                     </div>
                     <button onclick="toggleSideMenu()" class="text-slate-600"><i class="fa-solid fa-bars"></i></button>
@@ -693,7 +711,7 @@
                 <!-- Header -->
                 <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
                     <div class="flex items-center gap-2">
-                        <button onclick="navigate('recipes')" class="text-slate-600 hover:text-slate-900 p-1"><i class="fa-solid fa-arrow-right text-lg"></i></button>
+                        <button onclick="navigate('recipes')" class="text-slate-600 hover:text-slate-900 p-1 w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
                         <h2 class="font-bold text-slate-800 text-lg" id="detail-recipe-title">עוגת שוקולד טבעונית</h2>
                     </div>
                     <button id="recipe-fav-btn" onclick="toggleFavorite()" class="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-full border border-slate-200 text-rose-500"><i class="fa-regular fa-heart"></i></button>
@@ -771,7 +789,7 @@
                 <!-- Header -->
                 <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
                     <div class="flex items-center gap-2">
-                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1"><i class="fa-solid fa-arrow-right text-lg"></i></button>
+                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1 w-8 h-8 flex items-center justify-center"><i class="fa-solid fa-xmark text-lg"></i></button>
                         <h2 class="font-bold text-slate-800 text-lg">רשימת קניות</h2>
                     </div>
                     <button onclick="toggleSideMenu()" class="text-slate-600"><i class="fa-solid fa-bars"></i></button>
@@ -1110,27 +1128,121 @@
             }
 
             return `
-                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between hover:border-slate-300 transition duration-150 my-1">
-                    <div class="flex items-center gap-3">
-                        <button onclick="deleteInventoryItem(${item.id})" class="text-slate-300 hover:text-rose-500 transition duration-150">
-                            <i class="fa-regular fa-trash-can"></i>
+                <div class="inventory-swipe-row rounded-2xl border border-slate-200/80 shadow-sm my-1">
+                    <div class="inventory-swipe-action">
+                        <button type="button" onclick="addInventoryItemToShopping(${item.id})" class="w-12 h-12 flex items-center justify-center text-slate-700 hover:text-slate-900 transition" title="הוסף לרשימת קניות">
+                            <i class="fa-solid fa-cart-shopping text-lg"></i>
                         </button>
-                        <div>
-                            <h4 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                    </div>
+                    <div class="inventory-swipe-content flex items-center justify-between gap-2 p-3 bg-white" data-inventory-id="${item.id}" data-swipe-offset="0">
+                        <div class="flex items-center bg-slate-100 rounded-lg border border-slate-200/60 shrink-0">
+                            <button type="button" onclick="event.stopPropagation(); updateQuantity(${item.id}, -1)" class="w-9 h-9 flex items-center justify-center text-slate-600 hover:bg-white transition active:scale-95"><i class="fa-solid fa-minus text-xs"></i></button>
+                            <button type="button" onclick="event.stopPropagation(); updateQuantity(${item.id}, 1)" class="w-9 h-9 flex items-center justify-center text-slate-600 hover:bg-white transition active:scale-95"><i class="fa-solid fa-plus text-xs"></i></button>
+                        </div>
+                        <div class="flex-1 text-right min-w-0 px-1">
+                            <h4 class="font-bold text-slate-800 text-sm flex items-center justify-end gap-1.5">
                                 <span>${item.name}</span>
                                 ${badgeMarkup}
                             </h4>
-                            <span class="text-xs text-slate-400 block mt-0.5">${item.category} • ${item.quantity} ${item.unit}</span>
+                            <span class="text-xs text-slate-500 block mt-0.5">${item.quantity} ${item.unit}</span>
                         </div>
-                    </div>
-                    
-                    <div class="flex items-center bg-slate-100 rounded-xl p-0.5 border border-slate-200/40">
-                        <button onclick="updateQuantity(${item.id}, -1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-white hover:text-slate-800 transition active:scale-95"><i class="fa-solid fa-minus text-xs"></i></button>
-                        <span class="w-8 text-center text-xs font-bold text-slate-700">${item.quantity}</span>
-                        <button onclick="updateQuantity(${item.id}, 1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-white hover:text-slate-800 transition active:scale-95"><i class="fa-solid fa-plus text-xs"></i></button>
+                        <div class="w-5 h-5 rounded-full border-2 border-slate-300 shrink-0"></div>
                     </div>
                 </div>
             `;
+        }
+
+        const INVENTORY_SWIPE_WIDTH = 56;
+        let activeInventorySwipeEl = null;
+        let inventorySwipeStartX = 0;
+        let inventorySwipeDragDelta = 0;
+        let inventorySwipeBaseOffset = 0;
+        let inventorySwipeIsDragging = false;
+        let inventorySwipeGlobalsBound = false;
+
+        function setInventorySwipeOffset(content, offset) {
+            const clamped = Math.max(-INVENTORY_SWIPE_WIDTH, Math.min(0, offset));
+            content.dataset.swipeOffset = String(clamped);
+            content.style.transform = `translateX(${clamped}px)`;
+        }
+
+        function closeAllInventorySwipes() {
+            document.querySelectorAll('.inventory-swipe-content').forEach((content) => {
+                setInventorySwipeOffset(content, 0);
+            });
+        }
+
+        function closeInventorySwipe(itemId) {
+            const content = document.querySelector(`.inventory-swipe-content[data-inventory-id="${itemId}"]`);
+            if (content) setInventorySwipeOffset(content, 0);
+        }
+
+        function setupInventorySwipeRows() {
+            document.querySelectorAll('.inventory-swipe-content').forEach((content) => {
+                if (content.dataset.swipeBound === '1') return;
+                content.dataset.swipeBound = '1';
+
+                const onStart = (e) => {
+                    if (e.target.closest('button')) return;
+                    closeAllInventorySwipes();
+                    activeInventorySwipeEl = content;
+                    inventorySwipeBaseOffset = parseFloat(content.dataset.swipeOffset || '0');
+                    inventorySwipeIsDragging = true;
+                    inventorySwipeStartX = e.clientX ?? e.touches[0].clientX;
+                    inventorySwipeDragDelta = 0;
+                    content.style.transition = 'none';
+                };
+
+                content.addEventListener('mousedown', onStart);
+                content.addEventListener('touchstart', onStart, { passive: true });
+            });
+
+            if (inventorySwipeGlobalsBound) return;
+            inventorySwipeGlobalsBound = true;
+
+            const onMove = (e) => {
+                if (!inventorySwipeIsDragging || !activeInventorySwipeEl) return;
+                const clientX = e.clientX ?? (e.touches && e.touches[0].clientX);
+                if (clientX == null) return;
+                inventorySwipeDragDelta = clientX - inventorySwipeStartX;
+                setInventorySwipeOffset(activeInventorySwipeEl, inventorySwipeBaseOffset + inventorySwipeDragDelta);
+            };
+
+            const onEnd = () => {
+                if (!inventorySwipeIsDragging || !activeInventorySwipeEl) return;
+                inventorySwipeIsDragging = false;
+                activeInventorySwipeEl.style.transition = 'transform 0.2s ease';
+                const current = parseFloat(activeInventorySwipeEl.dataset.swipeOffset || '0');
+                setInventorySwipeOffset(
+                    activeInventorySwipeEl,
+                    current < -INVENTORY_SWIPE_WIDTH / 2 ? -INVENTORY_SWIPE_WIDTH : 0
+                );
+                activeInventorySwipeEl = null;
+            };
+
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('touchmove', onMove, { passive: true });
+            window.addEventListener('mouseup', onEnd);
+            window.addEventListener('touchend', onEnd);
+        }
+
+        function addInventoryItemToShopping(itemId) {
+            const item = inventory.find(i => i.id === itemId);
+            if (!item) return;
+
+            const existing = shoppingList.find(s => s.name === item.name);
+            if (!existing) {
+                shoppingList.push({
+                    id: Date.now(),
+                    name: item.name,
+                    quantity: 1,
+                    unit: item.unit || 'יחידה'
+                });
+                showToast(`נוסף לרשימת קניות: ${item.name}`);
+            } else {
+                showToast(`הפריט ${item.name} כבר קיים ברשימה!`);
+            }
+            closeInventorySwipe(itemId);
         }
 
 
@@ -1208,6 +1320,8 @@
                     listContainer.innerHTML += generateItemHTML(item);
                 });
             }
+
+            setupInventorySwipeRows();
         }
 
         function selectCategoryFilter(cat, pillEl) {
