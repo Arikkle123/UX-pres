@@ -139,27 +139,40 @@
         }
 
         #slide21.slide-container {
-            padding: 22px 40px 16px;
+            padding: 14px 22px;
+            position: relative;
         }
 
-        #slide21 .slide-title {
+        #slide21 .prototype-header {
+            position: absolute;
+            top: 14px;
+            right: 22px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        #slide21 .prototype-header .slide-title {
             font-size: 28px;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         #slide21 .prototype-embed {
-            flex-grow: 1;
-            min-height: 0;
+            position: absolute;
+            inset: 14px 22px;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            direction: ltr;
+        }
+
+        #slide21 .prototype-scale-host {
+            flex-shrink: 0;
         }
 
         #slide21 .prototype-iframe-shell {
             width: 420px;
             height: 880px;
-            flex-shrink: 0;
             transform-origin: center center;
             border-radius: 48px;
             overflow: hidden;
@@ -1085,11 +1098,15 @@
 
         <!-- SLIDE 21: PROTOTYPE -->
         <div class="slide-container slide-hidden" id="slide21">
-            <h2 class="slide-title">פרוטוטייפ</h2>
-            <p class="text-sm text-slate-500 font-bold text-right -mt-1 mb-2">האפליקציה לשימוש</p>
+            <div class="prototype-header text-right">
+                <h2 class="slide-title">פרוטוטייפ</h2>
+                <p class="text-sm text-slate-500 font-bold -mt-1">האפליקציה לשימוש</p>
+            </div>
             <div class="prototype-embed">
-                <div class="prototype-iframe-shell" id="prototype-iframe-shell">
-                    <iframe class="prototype-iframe" src="what_to_eat_app.html?embed=1" title="פרוטוטייפ - מה במקרר"></iframe>
+                <div class="prototype-scale-host" id="prototype-scale-host">
+                    <div class="prototype-iframe-shell" id="prototype-iframe-shell">
+                        <iframe class="prototype-iframe" src="what_to_eat_app.html?embed=1" title="פרוטוטייפ - מה במקרר"></iframe>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1331,17 +1348,18 @@
 
         function scalePrototypeIframe() {
             const embed = document.querySelector('#slide21 .prototype-embed');
+            const host = document.getElementById('prototype-scale-host');
             const shell = document.getElementById('prototype-iframe-shell');
-            if (!embed || !shell) return;
+            if (!embed || !host || !shell) return;
 
             const availableWidth = embed.clientWidth;
             const availableHeight = embed.clientHeight;
             if (availableWidth === 0 || availableHeight === 0) return;
 
-            const scale = Math.min(availableWidth / PROTOTYPE_WIDTH, availableHeight / PROTOTYPE_HEIGHT, 1);
+            const scale = Math.min(availableWidth / PROTOTYPE_WIDTH, availableHeight / PROTOTYPE_HEIGHT);
             shell.style.transform = `scale(${scale})`;
-            embed.style.width = `${PROTOTYPE_WIDTH * scale}px`;
-            embed.style.height = `${PROTOTYPE_HEIGHT * scale}px`;
+            host.style.width = `${PROTOTYPE_WIDTH * scale}px`;
+            host.style.height = `${PROTOTYPE_HEIGHT * scale}px`;
         }
 
         window.addEventListener('resize', fitPresentationToScreen);
