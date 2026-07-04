@@ -529,7 +529,7 @@
 
 
             <!-- SCREEN 5: RECIPES FEED / GRID VIEW (UX-WF-A1_Recepies Scroll.png, UX-WF-A1_Recepies.png) -->
-            <div id="screen-recipes" class="page-view flex flex-col h-full hidden overflow-hidden bg-slate-50">
+            <div id="screen-recipes" class="page-view flex flex-col h-full hidden overflow-hidden bg-slate-50 relative">
                 <!-- Header -->
                 <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
                     <div class="flex items-center gap-2">
@@ -553,13 +553,20 @@
                 </div>
 
                 <!-- Scrollable Food Recommendations Sections -->
-                <div class="flex-1 overflow-y-auto p-4 space-y-5">
+                <div id="recipe-mode-toggle-mini" class="hidden absolute left-3 top-[7.25rem] z-20 bg-slate-200 p-0.5 rounded-full flex shadow-md border border-slate-300/80">
+                    <button type="button" onclick="setRecipePantryMode(false)" id="mode-buy-mini" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-600 transition" title="אני מוכן ללכת לקנות">
+                        <i class="fa-solid fa-cart-shopping text-sm"></i>
+                    </button>
+                    <button type="button" onclick="setRecipePantryMode(true)" id="mode-pantry-mini" class="w-9 h-9 rounded-full flex items-center justify-center text-slate-800 bg-white shadow-sm transition" title="רק מה שיש בבית">
+                        <i class="fa-solid fa-house text-sm"></i>
+                    </button>
+                </div>
+
+                <div id="recipes-scroll-area" class="flex-1 overflow-y-auto p-4 space-y-5 relative" onscroll="handleRecipesScroll()">
                     
-                    <!-- HIGH-FIDELITY WIREFRAME TOGGLE INTERFACE (As seen in UX-WF-A1_Recepies.png) -->
-                    <!-- Toggle Panel 1: Inventory vs Buying -->
-                    <div class="bg-slate-200 p-1 rounded-2xl flex font-bold text-sm select-none shadow-inner">
-                        <button onclick="setRecipePantryMode(false)" id="mode-buy" class="flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-700 bg-transparent hover:text-slate-900">אני מוכן ללכת לקנות</button>
-                        <button onclick="setRecipePantryMode(true)" id="mode-pantry" class="flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-800 bg-white shadow-md">רק מה שיש בבית</button>
+                    <div id="recipe-mode-toggle-full" class="bg-slate-200 p-1 rounded-2xl flex font-bold text-sm select-none shadow-inner">
+                        <button type="button" onclick="setRecipePantryMode(false)" id="mode-buy" class="flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-700 bg-transparent hover:text-slate-900">אני מוכן ללכת לקנות</button>
+                        <button type="button" onclick="setRecipePantryMode(true)" id="mode-pantry" class="flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-800 bg-white shadow-md">רק מה שיש בבית</button>
                     </div>
 
                     <!-- Action Buttons 2: Recipe Generator Shortcuts -->
@@ -814,7 +821,13 @@
                 <div class="flex-1 overflow-y-auto p-4 space-y-4">
                     <!-- Active custom user lists -->
                     <div class="space-y-2.5">
-                        <h3 class="font-extrabold text-slate-800 text-sm px-1">הרשימה שלי</h3>
+                        <div class="flex justify-between items-center px-1">
+                            <h3 class="font-extrabold text-slate-800 text-sm">הרשימה שלי</h3>
+                            <button type="button" onclick="editBaseShoppingList()" class="text-xs font-bold text-slate-600 hover:text-emerald-700 flex items-center gap-1.5 transition btn-active">
+                                <i class="fa-solid fa-pen text-[10px]"></i>
+                                <span>עריכת רשימת בסיס</span>
+                            </button>
+                        </div>
                         <div id="shopping-list-container" class="space-y-2">
                             <!-- Filled dynamically by script -->
                         </div>
@@ -1068,6 +1081,11 @@
                     if (autocomplete) autocomplete.classList.add('hidden');
                 } else if (screenId === 'recipes') {
                     renderRecipesFeed();
+                    syncRecipeModeToggleUI();
+                    const recipesScroll = document.getElementById('recipes-scroll-area');
+                    const recipeMiniToggle = document.getElementById('recipe-mode-toggle-mini');
+                    if (recipesScroll) recipesScroll.scrollTop = 0;
+                    if (recipeMiniToggle) recipeMiniToggle.classList.add('hidden');
                 }
             } catch (err) {
                 console.warn(err);
@@ -1302,11 +1320,8 @@
                 sortedCategories.forEach(cat => {
                     // Category group header template matching wireframe with selection dot
                     listContainer.innerHTML += `
-                        <div class="flex items-center justify-between pt-5 pb-2 px-1 border-b border-slate-200 mt-2 shrink-0">
+                        <div class="pt-5 pb-2 px-1 border-b border-slate-200 mt-2 shrink-0">
                             <span class="font-extrabold text-slate-800 text-sm">${cat}</span>
-                            <div class="w-5 h-5 rounded-full border border-slate-300 hover:bg-slate-100 transition cursor-pointer flex items-center justify-center bg-white shadow-sm">
-                                <div class="w-2.5 h-2.5 rounded-full bg-slate-300 hover:bg-slate-400 transition"></div>
-                            </div>
                         </div>
                     `;
 
@@ -1605,18 +1620,21 @@
                 `;
             } else {
                 shoppingList.forEach(item => {
+                    const qtyLabel = Number.isInteger(item.quantity) ? item.quantity : item.quantity;
                     const html = `
-                        <div class="bg-white rounded-2xl p-4 border border-slate-200/60 shadow-sm flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <button onclick="deleteShoppingItem(${item.id})" class="text-slate-300 hover:text-rose-500 transition">
-                                    <i class="fa-regular fa-trash-can"></i>
-                                </button>
-                                <div>
-                                    <h4 class="font-bold text-slate-800 text-sm">${item.name}</h4>
-                                    ${item.fromRecipe ? `<span class="text-[10px] text-emerald-600 font-bold block mt-0.5"><i class="fa-solid fa-circle-info ml-1"></i>חסר עבור: ${item.fromRecipe}</span>` : ''}
-                                </div>
+                        <div class="bg-white rounded-2xl p-3 border border-slate-200/60 shadow-sm flex items-center justify-between gap-2">
+                            <div class="flex items-center bg-slate-100 rounded-lg border border-slate-200/60 shrink-0">
+                                <button type="button" onclick="updateShoppingQuantity(${item.id}, -1)" class="w-9 h-9 flex items-center justify-center text-slate-600 hover:bg-white transition active:scale-95"><i class="fa-solid fa-minus text-xs"></i></button>
+                                <button type="button" onclick="updateShoppingQuantity(${item.id}, 1)" class="w-9 h-9 flex items-center justify-center text-slate-600 hover:bg-white transition active:scale-95"><i class="fa-solid fa-plus text-xs"></i></button>
                             </div>
-                            <span class="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200/40">${item.quantity} ${item.unit}</span>
+                            <div class="flex-1 text-right min-w-0 px-1">
+                                <h4 class="font-bold text-slate-800 text-sm">${item.name}</h4>
+                                <span class="text-xs text-slate-500 block mt-0.5">${qtyLabel} ${item.unit}</span>
+                                ${item.fromRecipe ? `<span class="text-[10px] text-emerald-600 font-bold block mt-0.5"><i class="fa-solid fa-circle-info ml-1"></i>חסר עבור: ${item.fromRecipe}</span>` : ''}
+                            </div>
+                            <button type="button" onclick="deleteShoppingItem(${item.id})" class="text-slate-300 hover:text-rose-500 transition shrink-0 p-1">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
                         </div>
                     `;
                     container.innerHTML += html;
@@ -1759,6 +1777,56 @@
             shoppingList = shoppingList.filter(item => item.id !== id);
             renderShoppingList();
             showToast("הפריט הוסר בהצלחה");
+        }
+
+        function updateShoppingQuantity(id, change) {
+            const item = shoppingList.find(i => i.id === id);
+            if (!item) return;
+            item.quantity = Math.max(0, (item.quantity || 1) + change);
+            if (item.quantity <= 0) {
+                deleteShoppingItem(id);
+            } else {
+                renderShoppingList();
+            }
+        }
+
+        function editBaseShoppingList() {
+            showFeatureNotReady();
+        }
+
+        function handleRecipesScroll() {
+            const scrollEl = document.getElementById('recipes-scroll-area');
+            const mini = document.getElementById('recipe-mode-toggle-mini');
+            if (!scrollEl || !mini) return;
+            if (scrollEl.scrollTop > 70) {
+                mini.classList.remove('hidden');
+            } else {
+                mini.classList.add('hidden');
+            }
+        }
+
+        function syncRecipeModeToggleUI() {
+            const btnBuy = document.getElementById('mode-buy');
+            const btnPantry = document.getElementById('mode-pantry');
+            const btnBuyMini = document.getElementById('mode-buy-mini');
+            const btnPantryMini = document.getElementById('mode-pantry-mini');
+
+            const activeFull = 'flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-800 bg-white shadow-md';
+            const inactiveFull = 'flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-700 bg-transparent hover:text-slate-900';
+            const activeMini = 'w-9 h-9 rounded-full flex items-center justify-center text-slate-800 bg-white shadow-sm transition';
+            const inactiveMini = 'w-9 h-9 rounded-full flex items-center justify-center text-slate-600 transition';
+
+            if (isPantryOnlyMode) {
+                if (btnPantry) btnPantry.className = activeFull;
+                if (btnBuy) btnBuy.className = inactiveFull;
+                if (btnPantryMini) btnPantryMini.className = activeMini;
+                if (btnBuyMini) btnBuyMini.className = inactiveMini;
+            } else {
+                if (btnBuy) btnBuy.className = activeFull;
+                if (btnPantry) btnPantry.className = inactiveFull;
+                if (btnBuyMini) btnBuyMini.className = activeMini;
+                if (btnPantryMini) btnPantryMini.className = inactiveMini;
+            }
         }
 
 
@@ -1963,16 +2031,11 @@
 
         function setRecipePantryMode(isPantryOnly) {
             isPantryOnlyMode = isPantryOnly;
-            const btnBuy = document.getElementById('mode-buy');
-            const btnPantry = document.getElementById('mode-pantry');
+            syncRecipeModeToggleUI();
             
             if (isPantryOnlyMode) {
-                btnPantry.className = "flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-800 bg-white shadow-md";
-                btnBuy.className = "flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-700 bg-transparent hover:text-slate-900";
                 showToast("מציג מתכונים המבוססים על מלאי המקרר הנוכחי בלבד!");
             } else {
-                btnBuy.className = "flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-800 bg-white shadow-md";
-                btnPantry.className = "flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-700 bg-transparent hover:text-slate-900";
                 showToast("מציג את כל המתכונים, כולל אלו שחסרים עבורם מצרכים");
             }
         }
