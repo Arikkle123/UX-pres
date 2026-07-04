@@ -338,18 +338,18 @@
                 </div>
 
                 <!-- Simulation body -->
-                <div class="flex-1 flex flex-col items-center justify-between p-6 relative bg-slate-900 text-white">
+                <div class="flex-1 overflow-y-auto no-scrollbar p-4 pb-6 relative bg-slate-900 text-white space-y-4">
                     
                     <!-- Scan Screen simulation with guides -->
-                    <div class="w-full flex-1 border border-slate-700 rounded-3xl relative flex flex-col items-center justify-center p-4 bg-slate-950/40 shadow-inner overflow-hidden max-h-[420px]">
+                    <div class="w-full border border-slate-700 rounded-3xl relative flex flex-col items-center justify-center p-4 bg-slate-950/40 shadow-inner overflow-hidden min-h-[240px]">
                         <!-- Camera mock corners -->
-                        <div class="absolute top-8 left-8 w-10 h-10 border-t-4 border-l-4 border-emerald-500 rounded-tl-lg"></div>
-                        <div class="absolute top-8 right-8 w-10 h-10 border-t-4 border-r-4 border-emerald-500 rounded-tr-lg"></div>
-                        <div class="absolute bottom-8 left-8 w-10 h-10 border-b-4 border-l-4 border-emerald-500 rounded-bl-lg"></div>
-                        <div class="absolute bottom-8 right-8 w-10 h-10 border-b-4 border-r-4 border-emerald-500 rounded-br-lg"></div>
+                        <div class="absolute top-6 left-6 w-8 h-8 border-t-4 border-l-4 border-emerald-500 rounded-tl-lg"></div>
+                        <div class="absolute top-6 right-6 w-8 h-8 border-t-4 border-r-4 border-emerald-500 rounded-tr-lg"></div>
+                        <div class="absolute bottom-6 left-6 w-8 h-8 border-b-4 border-l-4 border-emerald-500 rounded-bl-lg"></div>
+                        <div class="absolute bottom-6 right-6 w-8 h-8 border-b-4 border-r-4 border-emerald-500 rounded-br-lg"></div>
 
                         <!-- Mock scanned paper -->
-                        <div id="scan-receipt-mock" class="w-44 p-4 bg-white text-slate-800 rounded-lg shadow-2xl opacity-75 transform rotate-2 flex flex-col gap-2 relative">
+                        <div id="scan-receipt-mock" class="w-40 p-3 bg-white text-slate-800 rounded-lg shadow-2xl opacity-75 transform rotate-2 flex flex-col gap-2 relative">
                             <div class="border-b border-dashed border-slate-300 pb-1.5 text-center">
                                 <span class="text-[9px] font-bold block uppercase tracking-widest text-slate-500">Supermarket IL</span>
                                 <span class="text-[7px] text-slate-400 block">04/07/2026</span>
@@ -381,19 +381,61 @@
                         </div>
 
                         <!-- Pulse overlay text -->
-                        <div class="absolute bottom-12 text-center">
-                            <span class="text-xs bg-black/65 px-3 py-1.5 rounded-full backdrop-blur-sm border border-slate-800 tracking-wide inline-block animate-pulse text-slate-200">
+                        <div class="absolute bottom-8 text-center">
+                            <span class="text-[11px] bg-black/65 px-3 py-1.5 rounded-full backdrop-blur-sm border border-slate-800 tracking-wide inline-block animate-pulse text-slate-200">
                                 סורק קבלה ומצליב עם מאגר CHP...
                             </span>
                         </div>
                     </div>
 
-                    <!-- Trigger mock scanner action -->
-                    <div class="w-full pt-4 shrink-0">
-                        <button onclick="startMockScanProcess()" class="w-full bg-emerald-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-emerald-500 active:scale-98 transition btn-active flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-camera"></i>
-                            <span>סרוק קבלה מהסופרמרקט</span>
+                    <!-- Primary: camera scan -->
+                    <button type="button" onclick="startMockScanProcess()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-2xl shadow-lg hover:bg-emerald-500 active:scale-98 transition btn-active flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-camera"></i>
+                        <span>סרוק קבלה מהסופרמרקט</span>
+                    </button>
+
+                    <div class="flex items-center gap-3 text-slate-500 text-xs font-bold">
+                        <span class="flex-1 h-px bg-slate-700"></span>
+                        <span>או</span>
+                        <span class="flex-1 h-px bg-slate-700"></span>
+                    </div>
+
+                    <!-- Alternate receipt intake options -->
+                    <div class="space-y-2.5">
+                        <input id="receipt-file-input" type="file" accept=".pdf,image/*" class="hidden" onchange="handleReceiptFileUpload(event)">
+
+                        <button type="button" onclick="triggerReceiptFileUpload()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white rounded-2xl p-3.5 flex items-center gap-3 transition btn-active text-right">
+                            <span class="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-arrow-up text-emerald-400"></i></span>
+                            <span class="flex-1 min-w-0">
+                                <span class="block text-sm font-bold">העלאת קובץ קבלה</span>
+                                <span class="block text-[11px] text-slate-400 mt-0.5">PDF או תמונה מהגלריה</span>
+                            </span>
+                            <i class="fa-solid fa-chevron-left text-slate-500 text-xs shrink-0"></i>
                         </button>
+
+                        <div class="w-full bg-slate-800 border border-slate-600 text-white rounded-2xl p-3.5 flex items-start gap-3 text-right">
+                            <span class="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-envelope text-sky-400"></i></span>
+                            <div class="flex-1 min-w-0">
+                                <span class="block text-sm font-bold">העבר קבלה במייל</span>
+                                <span class="block text-[11px] text-slate-400 mt-0.5 leading-relaxed">העבר את הקבלה למייל האישי שלך — המערכת תסרוק אותה אוטומטית:</span>
+                                <button type="button" onclick="copyReceiptEmail()" class="mt-2 w-full bg-slate-900/80 border border-slate-600 rounded-xl px-3 py-2 flex items-center justify-between gap-2 hover:border-emerald-500/50 transition">
+                                    <span id="user-receipt-email" class="text-xs font-bold text-emerald-300 truncate" dir="ltr">OferD_2@mabamekarer.com</span>
+                                    <span class="text-[10px] text-slate-400 shrink-0"><i class="fa-regular fa-copy ml-1"></i>העתק</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="w-full bg-slate-800 border border-slate-600 text-white rounded-2xl p-3.5 flex items-start gap-3 text-right">
+                            <span class="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-comment-sms text-violet-400"></i></span>
+                            <div class="flex-1 min-w-0">
+                                <span class="block text-sm font-bold">העבר קבלה ב-SMS</span>
+                                <span class="block text-[11px] text-slate-400 mt-0.5 leading-relaxed">שלח תמונת קבלה למספר הבא מהטלפון שלך — תותאם לפי מספר השולח:</span>
+                                <button type="button" onclick="copyReceiptSms()" class="mt-2 w-full bg-slate-900/80 border border-slate-600 rounded-xl px-3 py-2 flex items-center justify-between gap-2 hover:border-emerald-500/50 transition">
+                                    <span id="user-receipt-sms" class="text-xs font-bold text-emerald-300" dir="ltr">050-3339993</span>
+                                    <span class="text-[10px] text-slate-400 shrink-0"><i class="fa-regular fa-copy ml-1"></i>העתק</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1063,6 +1105,8 @@
         let swipeDragCleanup = null;
         let swipeProcessing = false;
         const FEATURE_NOT_READY_MSG = "פיצ'ר זה טרם פותח בפרוטוטייפ";
+        const USER_RECEIPT_EMAIL = "OferD_2@mabamekarer.com";
+        const USER_RECEIPT_SMS = "050-3339993";
 
         function showFeatureNotReady() {
             showToast(FEATURE_NOT_READY_MSG);
@@ -1481,6 +1525,35 @@
                 renderSwipeCardStack();
                 navigate('swipe-verification');
             }, 1200);
+        }
+
+        function triggerReceiptFileUpload() {
+            const input = document.getElementById('receipt-file-input');
+            if (input) input.click();
+        }
+
+        function handleReceiptFileUpload(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            showToast(`מעלה ומפענח: ${file.name}`);
+            event.target.value = '';
+            startMockScanProcess();
+        }
+
+        function copyTextToClipboard(text, successMsg) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => showToast(successMsg)).catch(() => showToast(successMsg));
+            } else {
+                showToast(successMsg);
+            }
+        }
+
+        function copyReceiptEmail() {
+            copyTextToClipboard(USER_RECEIPT_EMAIL, `כתובת המייל הועתקה: ${USER_RECEIPT_EMAIL}`);
+        }
+
+        function copyReceiptSms() {
+            copyTextToClipboard(USER_RECEIPT_SMS.replace(/-/g, ''), `מספר ה-SMS הועתק: ${USER_RECEIPT_SMS}`);
         }
 
         function exitSwipeVerification() {
