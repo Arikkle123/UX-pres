@@ -1,0 +1,1802 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מה במקרר - What to Eat</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for premium Hebrew typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Rubik', sans-serif;
+            background-color: #f1f5f9;
+        }
+        /* Custom scrollbar hiding for clean app experience */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Smooth transitions */
+        .page-transition {
+            transition: all 0.25s ease-in-out;
+        }
+        /* Swipe Card styles */
+        .swipe-card {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            cursor: grab;
+        }
+        .swipe-card:active {
+            cursor: grabbing;
+        }
+        /* Ripple & hover effects for app buttons */
+        .btn-active:active {
+            transform: scale(0.96);
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-0 sm:p-4 md:p-8 select-none">
+
+    <!-- Mobile Device Simulator Frame -->
+    <div class="relative w-full max-w-[420px] h-[880px] sm:h-[840px] bg-slate-900 rounded-[48px] shadow-2xl overflow-hidden border-[10px] border-slate-800 flex flex-col">
+        
+        <!-- Status Bar Simulator -->
+        <div class="bg-white px-6 pt-3 pb-2 flex justify-between items-center text-xs text-slate-700 font-semibold z-30 shrink-0">
+            <div>11:04</div>
+            <!-- Dynamic Island/Camera notch -->
+            <div class="w-24 h-4 bg-black rounded-full absolute left-1/2 transform -translate-x-1/2 top-2"></div>
+            <div class="flex items-center gap-1.5">
+                <i class="fa-solid fa-wifi"></i>
+                <i class="fa-solid fa-signal"></i>
+                <i class="fa-solid fa-battery-three-quarters"></i>
+            </div>
+        </div>
+
+        <!-- App Dynamic Screen Container -->
+        <div id="app-container" class="flex-1 bg-slate-50 flex flex-col overflow-hidden relative">
+            
+            <!-- Toast notification container (replaces native alerts) -->
+            <div id="toast" class="absolute top-4 left-4 right-4 bg-emerald-600 text-white px-4 py-3 rounded-xl shadow-lg transform -translate-y-20 opacity-0 transition-all duration-300 z-50 text-center text-sm font-medium flex items-center justify-center gap-2">
+                <i class="fa-solid fa-circle-check"></i>
+                <span id="toast-text">הפעולה הושלמה בהצלחה!</span>
+            </div>
+
+            <!-- Side Navigation Menu (As seen in UX-WF-A1_Menu drop down.png) -->
+            <div id="side-menu" class="absolute inset-y-0 right-0 w-4/5 bg-white z-40 transform translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
+                <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                    <h3 class="font-bold text-lg text-slate-800">כותרת תפריט</h3>
+                    <button onclick="toggleSideMenu()" class="text-slate-500 hover:text-slate-800 p-2">
+                        <i class="fa-solid fa-arrow-left text-lg"></i>
+                    </button>
+                </div>
+                <div class="flex-1 py-4 flex flex-col justify-between">
+                    <div class="space-y-1 px-3">
+                        <button onclick="navigate('home')" class="w-full text-right py-3.5 px-4 rounded-xl font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-3 transition">
+                            <i class="fa-solid fa-house text-emerald-600 w-6"></i>
+                            <span>מסך הבית</span>
+                        </button>
+                        <button onclick="navigate('scan-info')" class="w-full text-right py-3.5 px-4 rounded-xl font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-3 transition">
+                            <i class="fa-solid fa-barcode text-emerald-600 w-6"></i>
+                            <span>סריקת קבלות / מוצרים</span>
+                        </button>
+                        <button onclick="navigate('inventory')" class="w-full text-right py-3.5 px-4 rounded-xl font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-3 transition">
+                            <i class="fa-solid fa-kitchen-set text-emerald-600 w-6"></i>
+                            <span>מלאי (מה יש בבית)</span>
+                        </button>
+                        <button onclick="navigate('recipes')" class="w-full text-right py-3.5 px-4 rounded-xl font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-3 transition">
+                            <i class="fa-solid fa-book-open text-emerald-600 w-6"></i>
+                            <span>מתכונים</span>
+                        </button>
+                        <button onclick="navigate('shopping-list')" class="w-full text-right py-3.5 px-4 rounded-xl font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-3 transition">
+                            <i class="fa-solid fa-cart-shopping text-emerald-600 w-6"></i>
+                            <span>רשימת קניות</span>
+                        </button>
+                        <button onclick="navigate('preferences')" class="w-full text-right py-3.5 px-4 rounded-xl font-medium text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-3 transition">
+                            <i class="fa-solid fa-sliders text-emerald-600 w-6"></i>
+                            <span>פרופיל והעדפות</span>
+                        </button>
+                    </div>
+                    
+                    <div class="p-4 border-t border-slate-100 bg-slate-50">
+                        <button onclick="buildMeAMeal()" class="w-full bg-emerald-600 text-white font-bold py-3.5 px-4 rounded-xl shadow-md hover:bg-emerald-700 active:scale-98 transition btn-active flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            <span>בנה לי ארוחה!</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Side Menu Backdrop overlay -->
+            <div id="menu-backdrop" onclick="toggleSideMenu()" class="absolute inset-0 bg-black/40 z-30 hidden transition-opacity duration-300"></div>
+
+
+            <!-- SCREEN 1: HOME SCREEN (UX-WF-A1_Home screen.png) -->
+            <div id="screen-home" class="page-view flex flex-col h-full overflow-y-auto no-scrollbar">
+                <!-- Header -->
+                <div class="bg-white px-5 py-4 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center text-slate-500 overflow-hidden border border-slate-200 shadow-inner">
+                            <i class="fa-solid fa-user text-lg"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-500">שלום עופר,</p>
+                            <h2 class="font-bold text-slate-800 text-base">הי עופר! מה אוכלים היום?</h2>
+                        </div>
+                    </div>
+                    <button onclick="toggleSideMenu()" class="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-700 rounded-xl border border-slate-200 hover:bg-slate-100 transition">
+                        <i class="fa-solid fa-bars text-lg"></i>
+                    </button>
+                </div>
+
+                <!-- Main Grid Navigation Cards -->
+                <div class="p-4 grid grid-cols-2 gap-3.5">
+                    <!-- Scanner Button -->
+                    <button onclick="navigate('scan-info')" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col items-center justify-center text-center hover:border-emerald-500 hover:shadow-md transition group h-36 btn-active">
+                        <div class="w-14 h-14 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 mb-3 group-hover:bg-emerald-500 group-hover:text-white transition shadow-sm">
+                            <i class="fa-solid fa-qrcode text-2xl"></i>
+                        </div>
+                        <span class="font-bold text-slate-800 text-sm">סריקת קבלות או מוצרים</span>
+                    </button>
+
+                    <!-- Inventory Button -->
+                    <button onclick="navigate('inventory')" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col items-center justify-center text-center hover:border-emerald-500 hover:shadow-md transition group h-36 btn-active">
+                        <div class="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center text-amber-600 mb-3 group-hover:bg-amber-500 group-hover:text-white transition shadow-sm">
+                            <i class="fa-solid fa-kitchen-set text-2xl"></i>
+                        </div>
+                        <span class="font-bold text-slate-800 text-sm">מלאי במקרר</span>
+                    </button>
+
+                    <!-- Recipes Button -->
+                    <button onclick="navigate('recipes')" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col items-center justify-center text-center hover:border-emerald-500 hover:shadow-md transition group h-36 btn-active">
+                        <div class="w-14 h-14 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 mb-3 group-hover:bg-indigo-500 group-hover:text-white transition shadow-sm">
+                            <i class="fa-solid fa-utensils text-2xl"></i>
+                        </div>
+                        <span class="font-bold text-slate-800 text-sm">מתכונים</span>
+                    </button>
+
+                    <!-- Shopping List Button -->
+                    <button onclick="navigate('shopping-list')" class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col items-center justify-center text-center hover:border-emerald-500 hover:shadow-md transition group h-36 btn-active">
+                        <div class="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center text-rose-600 mb-3 group-hover:bg-rose-500 group-hover:text-white transition shadow-sm">
+                            <i class="fa-solid fa-basket-shopping text-2xl"></i>
+                        </div>
+                        <span class="font-bold text-slate-800 text-sm">רשימת קניות</span>
+                    </button>
+                </div>
+
+                <!-- Live stats as seen in wireframe -->
+                <div class="mx-4 mb-6 p-4 bg-slate-800 rounded-2xl text-white shadow-lg space-y-3">
+                    <h3 class="font-bold text-sm text-slate-300 tracking-wider">סטטיסטיקה ומצב שבועי</h3>
+                    
+                    <div class="grid grid-cols-2 gap-4 pt-1">
+                        <div class="border-l border-slate-700/60 pl-2">
+                            <p class="text-xs text-slate-400">הכנת השבוע</p>
+                            <p class="text-lg font-extrabold text-emerald-400">6 מתכונים</p>
+                        </div>
+                        <div class="pr-2">
+                            <p class="text-xs text-slate-400">יש בבית</p>
+                            <p class="text-lg font-extrabold text-amber-400" id="home-inventory-count">54 מוצרים</p>
+                        </div>
+                    </div>
+                    
+                    <div class="pt-3 border-t border-slate-700/60 flex justify-between items-center">
+                        <div>
+                            <p class="text-[10px] text-slate-400">המתכון האהוב עליך:</p>
+                            <p class="text-xs font-bold text-slate-100">עוגת שוקולד טבעונית</p>
+                        </div>
+                        <button onclick="openRecipeDetail('עוגת שוקולד טבעונית')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition">
+                            <span>בשל עכשיו</span>
+                            <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Food Waste Prevention Banner (App Core) -->
+                <div class="mx-4 mb-6 p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
+                    <span class="text-2xl text-amber-600 pt-0.5"><i class="fa-solid fa-leaf"></i></span>
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-sm">מונעים בזבוז מזון במקרר!</h4>
+                        <p class="text-xs text-slate-600 leading-relaxed mt-0.5">סרוק קבלה כדי למנוע הזנה ידנית. המערכת תסנכרן את המוצרים שלך ותתריע לפני שהם פגי תוקף.</p>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- SCREEN 2: INVENTORY SCREEN (UX-WF-A1_Inventory.png, UX-WF-A1_Inventory - categories.png) -->
+            <div id="screen-inventory" class="page-view flex flex-col h-full hidden overflow-hidden">
+                <!-- Header -->
+                <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
+                    <div class="flex items-center gap-2">
+                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1"><i class="fa-solid fa-arrow-right text-lg"></i></button>
+                        <h2 class="font-bold text-slate-800 text-lg">מה יש בבית</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openSortingModal()" class="w-9 h-9 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-100 transition">
+                            <i class="fa-solid fa-arrow-down-up-across-line"></i>
+                        </button>
+                        <button onclick="toggleSideMenu()" class="w-9 h-9 flex items-center justify-center bg-slate-50 border border-slate-200 rounded-xl text-slate-600 hover:bg-slate-100 transition">
+                            <i class="fa-solid fa-bars"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Search and Categories Filtering -->
+                <div class="bg-white p-3 border-b border-slate-100 shrink-0 space-y-3">
+                    <div class="relative">
+                        <span class="absolute inset-y-0 right-3 flex items-center text-slate-400"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input id="inventory-search" type="text" oninput="filterInventory()" placeholder="חיפוש מוצר..." class="w-full pl-3 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-emerald-500 transition">
+                    </div>
+
+                    <!-- Horizontally scrollable category pill selectors -->
+                    <div class="flex gap-2 overflow-x-auto no-scrollbar py-1" id="category-filter-bar">
+                        <button onclick="selectCategoryFilter('all')" class="category-pill active bg-emerald-600 text-white border border-emerald-600 px-4 py-1.5 rounded-full text-xs font-bold shrink-0 transition">הכל</button>
+                        <button onclick="selectCategoryFilter('מוצרי חלב')" class="category-pill bg-slate-100 text-slate-600 border border-slate-200 px-4 py-1.5 rounded-full text-xs font-semibold shrink-0 transition">מוצרי חלב</button>
+                        <button onclick="selectCategoryFilter('מאפים')" class="category-pill bg-slate-100 text-slate-600 border border-slate-200 px-4 py-1.5 rounded-full text-xs font-semibold shrink-0 transition">מאפים</button>
+                        <button onclick="selectCategoryFilter('יבשים')" class="category-pill bg-slate-100 text-slate-600 border border-slate-200 px-4 py-1.5 rounded-full text-xs font-semibold shrink-0 transition">יבשים</button>
+                        <button onclick="selectCategoryFilter('ירקות')" class="category-pill bg-slate-100 text-slate-600 border border-slate-200 px-4 py-1.5 rounded-full text-xs font-semibold shrink-0 transition">ירקות</button>
+                        <button onclick="selectCategoryFilter('מתוקים')" class="category-pill bg-slate-100 text-slate-600 border border-slate-200 px-4 py-1.5 rounded-full text-xs font-semibold shrink-0 transition">מתוקים</button>
+                    </div>
+                </div>
+
+                <!-- Inventory Item List Section -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-4" id="inventory-list-container">
+                    <!-- Loaded via JavaScript renderInventory() -->
+                </div>
+
+                <!-- Add item floating action box -->
+                <div class="p-3 bg-white border-t border-slate-100 flex gap-2 shrink-0">
+                    <input id="new-item-name" type="text" placeholder="הוסף פריט חדש..." class="flex-1 px-3 py-2 bg-slate-100 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                    <button onclick="addNewInventoryItem()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold flex items-center justify-center gap-1.5 btn-active">
+                        <i class="fa-solid fa-plus"></i>
+                        <span>הוסף</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Inventory Sorting Modal dialog (UX-WF-A1_Inventory filter.png) -->
+            <div id="sorting-modal" class="absolute inset-0 bg-black/50 z-50 hidden flex items-end transition-opacity duration-300">
+                <div class="w-full bg-white rounded-t-[32px] p-6 space-y-4 shadow-2xl transform translate-y-full transition-transform duration-300">
+                    <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <h3 class="font-extrabold text-slate-800 text-base">מיין לפי</h3>
+                        <button onclick="closeSortingModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                    </div>
+                    
+                    <div class="space-y-1">
+                        <button onclick="applySort('expire')" class="w-full text-right py-3 px-4 rounded-xl flex justify-between items-center hover:bg-slate-50 transition text-sm text-slate-700 font-medium">
+                            <span>עומד להיגמר / פג תוקף</span>
+                            <span class="text-emerald-600 hidden check-mark"><i class="fa-solid fa-check"></i></span>
+                        </button>
+                        <button onclick="applySort('highuse')" class="w-full text-right py-3 px-4 rounded-xl flex justify-between items-center hover:bg-slate-50 transition text-sm text-slate-700 font-medium bg-slate-50">
+                            <span>בשימוש גבוה</span>
+                            <span class="text-emerald-600 check-mark"><i class="fa-solid fa-check"></i></span>
+                        </button>
+                        <button onclick="applySort('abc')" class="w-full text-right py-3 px-4 rounded-xl flex justify-between items-center hover:bg-slate-50 transition text-sm text-slate-700 font-medium">
+                            <span>א-ב</span>
+                            <span class="text-emerald-600 hidden check-mark"><i class="fa-solid fa-check"></i></span>
+                        </button>
+                        <button onclick="applySort('qty')" class="w-full text-right py-3 px-4 rounded-xl flex justify-between items-center hover:bg-slate-50 transition text-sm text-slate-700 font-medium">
+                            <span>כמות</span>
+                            <span class="text-emerald-600 hidden check-mark"><i class="fa-solid fa-check"></i></span>
+                        </button>
+                        <button onclick="applySort('category')" class="w-full text-right py-3 px-4 rounded-xl flex justify-between items-center hover:bg-slate-50 transition text-sm text-slate-700 font-medium">
+                            <span>קטגוריות</span>
+                            <span class="text-emerald-600 hidden check-mark"><i class="fa-solid fa-check"></i></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- SCREEN 3: SCANNING INFORMATION AND SWIPER DECK (UX-WF-A1_Recepie.png scan / App logic description) -->
+            <div id="screen-scan-info" class="page-view flex flex-col h-full hidden overflow-hidden">
+                <!-- Header -->
+                <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
+                    <div class="flex items-center gap-2">
+                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1"><i class="fa-solid fa-arrow-right text-lg"></i></button>
+                        <h2 class="font-bold text-slate-800 text-lg">סריקת קוד מוצר / קבלה</h2>
+                    </div>
+                    <button onclick="toggleSideMenu()" class="text-slate-600"><i class="fa-solid fa-bars"></i></button>
+                </div>
+
+                <!-- Simulation body -->
+                <div class="flex-1 flex flex-col items-center justify-between p-6 relative bg-slate-900 text-white">
+                    
+                    <!-- Scan Screen simulation with guides -->
+                    <div class="w-full flex-1 border border-slate-700 rounded-3xl relative flex flex-col items-center justify-center p-4 bg-slate-950/40 shadow-inner overflow-hidden max-h-[420px]">
+                        <!-- Camera mock corners -->
+                        <div class="absolute top-8 left-8 w-10 h-10 border-t-4 border-l-4 border-emerald-500 rounded-tl-lg"></div>
+                        <div class="absolute top-8 right-8 w-10 h-10 border-t-4 border-r-4 border-emerald-500 rounded-tr-lg"></div>
+                        <div class="absolute bottom-8 left-8 w-10 h-10 border-b-4 border-l-4 border-emerald-500 rounded-bl-lg"></div>
+                        <div class="absolute bottom-8 right-8 w-10 h-10 border-b-4 border-r-4 border-emerald-500 rounded-br-lg"></div>
+
+                        <!-- Mock scanned paper -->
+                        <div id="scan-receipt-mock" class="w-44 p-4 bg-white text-slate-800 rounded-lg shadow-2xl opacity-75 transform rotate-2 flex flex-col gap-2 relative">
+                            <div class="border-b border-dashed border-slate-300 pb-1.5 text-center">
+                                <span class="text-[9px] font-bold block uppercase tracking-widest text-slate-500">Supermarket IL</span>
+                                <span class="text-[7px] text-slate-400 block">04/07/2026</span>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-[7px] font-bold">
+                                    <span>חלב 5% x2</span>
+                                    <span>₪12.90</span>
+                                </div>
+                                <div class="flex justify-between text-[7px] font-bold">
+                                    <span>לחמניות x5</span>
+                                    <span>₪15.00</span>
+                                </div>
+                                <div class="flex justify-between text-[7px] font-bold">
+                                    <span>סוכר חום 1ק"ג</span>
+                                    <span>₪8.50</span>
+                                </div>
+                                <div class="flex justify-between text-[7px] font-bold">
+                                    <span>בוטנים 200 גרם</span>
+                                    <span>₪11.00</span>
+                                </div>
+                            </div>
+                            <div class="border-t border-dashed border-slate-300 pt-1 flex justify-between text-[8px] font-bold">
+                                <span>סה"כ</span>
+                                <span>₪47.40</span>
+                            </div>
+                            <!-- Scan line animation -->
+                            <div class="absolute inset-x-0 h-1 bg-red-500 animate-bounce shadow-[0_0_8px_rgba(239,68,68,0.8)] opacity-70"></div>
+                        </div>
+
+                        <!-- Pulse overlay text -->
+                        <div class="absolute bottom-12 text-center">
+                            <span class="text-xs bg-black/65 px-3 py-1.5 rounded-full backdrop-blur-sm border border-slate-800 tracking-wide inline-block animate-pulse text-slate-200">
+                                סורק קבלה ומצליב עם מאגר CHP...
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Trigger mock scanner action -->
+                    <div class="w-full space-y-4 pt-4 shrink-0">
+                        <button onclick="startMockScanProcess()" class="w-full bg-emerald-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:bg-emerald-500 active:scale-98 transition btn-active flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-camera"></i>
+                            <span>סרוק קבלה מהסופרמרקט</span>
+                        </button>
+                        <p class="text-[11px] text-slate-400 text-center leading-relaxed">
+                            המערכת תסרוק, תפענח את הפריטים ותציג אותם לאישורך המהיר בממשק משחקי (סווייפ) כדי למנוע הזנה ידנית מייגעת.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Swipe Verification Component Screen -->
+            <div id="screen-swipe-verification" class="page-view flex flex-col h-full hidden overflow-hidden bg-slate-50">
+                <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
+                    <h2 class="font-extrabold text-slate-800 text-base">אישור מוצרים חדשים</h2>
+                    <span class="text-xs font-bold text-slate-500" id="swipe-counter">פריט 1 מתוך 4</span>
+                </div>
+
+                <div class="flex-1 flex flex-col justify-between p-6">
+                    <p class="text-xs text-slate-500 text-center leading-relaxed px-4">
+                        החלק <span class="text-emerald-600 font-bold">ימינה</span> לאישור והוספה למקרר, או <span class="text-rose-600 font-bold">שמאלה</span> כדי לדחות.
+                    </p>
+
+                    <!-- Swipe deck zone -->
+                    <div class="flex-1 flex items-center justify-center relative my-6">
+                        <!-- Swipable Cards will be loaded dynamically here -->
+                        <div id="card-deck-container" class="relative w-full max-w-[280px] h-[320px]">
+                            <!-- Cards inserted by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Action control buttons -->
+                    <div class="flex items-center justify-center gap-6 pb-2">
+                        <button onclick="handleSwipeAction(false)" class="w-16 h-16 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-rose-500 text-xl hover:bg-rose-50 active:scale-90 transition btn-active">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                        <button onclick="handleSwipeAction(true)" class="w-16 h-16 rounded-full bg-emerald-600 shadow-lg flex items-center justify-center text-white text-xl hover:bg-emerald-500 active:scale-90 transition btn-active">
+                            <i class="fa-solid fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- SCREEN 4: PREFERENCES / PROFILE SCREEN (UX-WF-A1_Preferences.png) -->
+            <div id="screen-preferences" class="page-view flex flex-col h-full hidden overflow-hidden bg-slate-50">
+                <!-- Header -->
+                <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
+                    <div class="flex items-center gap-2">
+                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1"><i class="fa-solid fa-arrow-right text-lg"></i></button>
+                        <h2 class="font-bold text-slate-800 text-lg">פרופיל אישי והעדפות</h2>
+                    </div>
+                    <button onclick="toggleSideMenu()" class="text-slate-600"><i class="fa-solid fa-bars"></i></button>
+                </div>
+
+                <!-- Scrollable Form preferences container -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-4 pb-20">
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/60 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-sm border-b border-slate-100 pb-2">העדפות דיאטטיות</h3>
+                        
+                        <!-- List of toggles -->
+                        <div class="space-y-3.5">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-semibold text-slate-700">בשרי</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="pref-meat" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                </label>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-semibold text-slate-700">חלבי</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="pref-dairy" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                </label>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-semibold text-slate-700">כשר</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="pref-kosher" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                </label>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-semibold text-slate-700">צמחוני</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="pref-vegetarian" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                </label>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-semibold text-slate-700">טבעוני</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="pref-vegan" class="sr-only peer">
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/60 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-sm border-b border-slate-100 pb-2">רגישויות ומגבלות</h3>
+                        
+                        <!-- Sensitivities fields matching exact wireframe input labels -->
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">רגישויות</label>
+                                <input type="text" id="pref-sensitivities" placeholder="הקלד... (למשל: בוטנים, גלוטן)" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">בלי...</label>
+                                <div class="flex flex-wrap gap-1.5 p-2 bg-slate-50 border border-slate-200 rounded-xl min-h-[44px] items-center">
+                                    <!-- Dynamic list of tags (Wireframe has 'עגבניות') -->
+                                    <span class="inline-flex items-center gap-1.5 bg-slate-200 text-slate-700 text-xs font-bold px-2.5 py-1 rounded-full">
+                                        <span>עגבניות</span>
+                                        <button class="text-slate-500 hover:text-slate-800"><i class="fa-solid fa-xmark text-[10px]"></i></button>
+                                    </span>
+                                    <input type="text" placeholder="הוסף..." class="bg-transparent border-none text-xs text-slate-600 focus:outline-none w-20">
+                                </div>
+                            </div>
+
+                            <div class="flex justify-between items-center pt-2">
+                                <span class="text-sm font-semibold text-slate-700">ללא חריף</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="pref-no-spicy" class="sr-only peer" checked>
+                                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer buttons aligned to bottom -->
+                <div class="absolute bottom-0 inset-x-0 p-4 bg-white border-t border-slate-100 flex gap-3 z-10 shrink-0">
+                    <button onclick="savePreferences()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-md transition text-center text-sm btn-active">אישור</button>
+                    <button onclick="navigate('home')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition text-center text-sm btn-active">ביטול</button>
+                </div>
+            </div>
+
+
+            <!-- SCREEN 5: RECIPES FEED / GRID VIEW (UX-WF-A1_Recepies Scroll.png, UX-WF-A1_Recepies.png) -->
+            <div id="screen-recipes" class="page-view flex flex-col h-full hidden overflow-hidden bg-slate-50">
+                <!-- Header -->
+                <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
+                    <div class="flex items-center gap-2">
+                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1"><i class="fa-solid fa-arrow-right text-lg"></i></button>
+                        <h2 class="font-bold text-slate-800 text-lg">מה אוכלים היום?</h2>
+                    </div>
+                    <button onclick="toggleSideMenu()" class="text-slate-600"><i class="fa-solid fa-bars"></i></button>
+                </div>
+
+                <!-- Active Preference Pill Indicators -->
+                <div class="bg-emerald-50 px-4 py-2.5 border-b border-emerald-100 flex items-center justify-between shrink-0">
+                    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+                        <span class="text-xs text-emerald-800 font-bold bg-white border border-emerald-200 rounded-full px-3 py-1 shrink-0">צמחוני</span>
+                        <span class="text-xs text-emerald-800 font-bold bg-white border border-emerald-200 rounded-full px-3 py-1 shrink-0">ללא חריף</span>
+                        <span class="text-xs text-emerald-800 font-bold bg-white border border-emerald-200 rounded-full px-3 py-1 shrink-0">בלי עגבניות</span>
+                    </div>
+                    <button onclick="navigate('preferences')" class="text-emerald-700 text-xs font-bold shrink-0 hover:underline flex items-center gap-1 mr-2">
+                        <span>שינוי</span>
+                        <i class="fa-solid fa-sliders text-[10px]"></i>
+                    </button>
+                </div>
+
+                <!-- Scrollable Food Recommendations Sections -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-5">
+                    
+                    <!-- HIGH-FIDELITY WIREFRAME TOGGLE INTERFACE (As seen in UX-WF-A1_Recepies.png) -->
+                    <!-- Toggle Panel 1: Inventory vs Buying -->
+                    <div class="bg-slate-200 p-1 rounded-2xl flex font-bold text-sm select-none shadow-inner">
+                        <button onclick="setRecipePantryMode(false)" id="mode-buy" class="flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-700 bg-transparent hover:text-slate-900">אני מוכן ללכת לקנות</button>
+                        <button onclick="setRecipePantryMode(true)" id="mode-pantry" class="flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-800 bg-white shadow-md">רק מה שיש בבית</button>
+                    </div>
+
+                    <!-- Action Buttons 2: Recipe Generator Shortcuts -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="buildMeAMeal()" class="bg-white hover:bg-slate-50 active:scale-95 transition duration-150 rounded-2xl p-5 text-center font-extrabold text-slate-800 text-sm flex flex-col items-center justify-center gap-2 min-h-[100px] shadow-sm border border-slate-200">
+                            <i class="fa-solid fa-wand-magic-sparkles text-emerald-600 text-2xl"></i>
+                            <span>בנה לי ארוחה</span>
+                        </button>
+                        <button onclick="getSurpriseRecipe()" class="bg-white hover:bg-slate-50 active:scale-95 transition duration-150 rounded-2xl p-5 text-center font-extrabold text-slate-800 text-sm flex flex-col items-center justify-center gap-2 min-h-[100px] shadow-sm border border-slate-200">
+                            <i class="fa-solid fa-gift text-indigo-600 text-2xl"></i>
+                            <span>מתכון בהפתעה</span>
+                        </button>
+                    </div>
+
+                    <!-- Dynamic Category: Preferences / Favorites (העדפות) -->
+                    <div class="space-y-3" id="preferences-category-wrapper">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-extrabold text-slate-800 text-base flex items-center gap-1.5">
+                                <i class="fa-solid fa-heart text-rose-500"></i>
+                                <span>העדפות</span>
+                            </h3>
+                            <span class="text-xs font-bold text-slate-400">מתכונים שאהבת</span>
+                        </div>
+                        <div class="flex gap-4 overflow-x-auto no-scrollbar pb-1" id="favorites-recipes-list">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Main Dish Carousel (מנה עיקרית) -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-extrabold text-slate-800 text-base">מנה עיקרית</h3>
+                            <button class="text-slate-400 hover:text-slate-600 text-xs font-bold">עוד <i class="fa-solid fa-chevron-left text-[9px] mr-1"></i></button>
+                        </div>
+                        <div class="flex gap-4 overflow-x-auto no-scrollbar pb-1">
+                            <!-- Card 1 -->
+                            <div onclick="openRecipeDetail('עוף בתנור')" class="w-48 bg-white border border-slate-200/80 rounded-2xl p-3 shrink-0 shadow-sm hover:shadow-md transition cursor-pointer">
+                                <div class="w-full h-28 bg-amber-100 rounded-xl flex items-center justify-center text-slate-400 relative overflow-hidden mb-2">
+                                    <span class="text-4xl"><i class="fa-solid fa-drumstick-bite text-amber-600"></i></span>
+                                    <div class="absolute top-2 left-2 bg-emerald-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full">מצרכים זמינים</div>
+                                </div>
+                                <h4 class="font-bold text-slate-800 text-sm">עוף בתנור פריך</h4>
+                                <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
+                                    <span>קל</span>
+                                    <span>•</span>
+                                    <span>45 דקות</span>
+                                </div>
+                            </div>
+                            <!-- Card 2 -->
+                            <div onclick="openRecipeDetail('אורז עם ירקות')" class="w-48 bg-white border border-slate-200/80 rounded-2xl p-3 shrink-0 shadow-sm hover:shadow-md transition cursor-pointer">
+                                <div class="w-full h-28 bg-emerald-50 rounded-xl flex items-center justify-center text-slate-400 relative overflow-hidden mb-2">
+                                    <span class="text-4xl"><i class="fa-solid fa-bowl-rice text-emerald-600"></i></span>
+                                    <div class="absolute top-2 left-2 bg-emerald-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full">מצרכים זמינים</div>
+                                </div>
+                                <h4 class="font-bold text-slate-800 text-sm">אורז מוקפץ</h4>
+                                <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
+                                    <span>קל</span>
+                                    <span>•</span>
+                                    <span>20 דקות</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sides Carousel (תוספות) -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-extrabold text-slate-800 text-base">תוספות</h3>
+                            <button class="text-slate-400 hover:text-slate-600 text-xs font-bold">עוד <i class="fa-solid fa-chevron-left text-[9px] mr-1"></i></button>
+                        </div>
+                        <div class="flex gap-4 overflow-x-auto no-scrollbar pb-1">
+                            <div class="w-48 bg-white border border-slate-200/80 rounded-2xl p-3 shrink-0 shadow-sm hover:shadow-md transition">
+                                <div class="w-full h-28 bg-orange-100 rounded-xl flex items-center justify-center text-slate-400 relative overflow-hidden mb-2">
+                                    <span class="text-4xl"><i class="fa-solid fa-carrot text-orange-600"></i></span>
+                                </div>
+                                <h4 class="font-bold text-slate-800 text-sm">ירקות אפויים</h4>
+                                <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
+                                    <span>קל</span>
+                                    <span>•</span>
+                                    <span>30 דקות</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Snacks Carousel (נשנושים) -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-extrabold text-slate-800 text-base">נשנושים</h3>
+                            <button class="text-slate-400 hover:text-slate-600 text-xs font-bold">עוד <i class="fa-solid fa-chevron-left text-[9px] mr-1"></i></button>
+                        </div>
+                        <div class="flex gap-4 overflow-x-auto no-scrollbar pb-1">
+                            <!-- Card 1 -->
+                            <div onclick="openRecipeDetail('נאצוס עם גוואקמולי')" class="w-48 bg-white border border-slate-200/80 rounded-2xl p-3 shrink-0 shadow-sm hover:shadow-md transition cursor-pointer">
+                                <div class="w-full h-28 bg-emerald-50 rounded-xl flex items-center justify-center text-slate-400 relative overflow-hidden mb-2">
+                                    <span class="text-4xl"><i class="fa-solid fa-pepper-hot text-emerald-600"></i></span>
+                                    <div class="absolute top-2 left-2 bg-emerald-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full">מצרכים זמינים</div>
+                                </div>
+                                <h4 class="font-bold text-slate-800 text-sm">נאצ'וס עם גוואקמולי</h4>
+                                <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
+                                    <span>קל</span>
+                                    <span>•</span>
+                                    <span>15 דקות</span>
+                                </div>
+                            </div>
+                            <!-- Card 2 -->
+                            <div onclick="openRecipeDetail('חטיף אנרגיה ביתי')" class="w-48 bg-white border border-slate-200/80 rounded-2xl p-3 shrink-0 shadow-sm hover:shadow-md transition cursor-pointer">
+                                <div class="w-full h-28 bg-amber-50 rounded-xl flex items-center justify-center text-slate-400 relative overflow-hidden mb-2">
+                                    <span class="text-4xl"><i class="fa-solid fa-cookie text-amber-600"></i></span>
+                                    <div class="absolute top-2 left-2 bg-rose-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full">חסרים מצרכים</div>
+                                </div>
+                                <h4 class="font-bold text-slate-800 text-sm">חטיף אנרגיה ביתי</h4>
+                                <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
+                                    <span>קל</span>
+                                    <span>•</span>
+                                    <span>15 דקות</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Desserts Carousel (קינוח / עוגות) -->
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <h3 class="font-extrabold text-slate-800 text-base">מתוקים וקינוחים</h3>
+                            <button class="text-slate-400 hover:text-slate-600 text-xs font-bold">עוד <i class="fa-solid fa-chevron-left text-[9px] mr-1"></i></button>
+                        </div>
+                        <div class="flex gap-4 overflow-x-auto no-scrollbar pb-1">
+                            <div onclick="openRecipeDetail('עוגת שוקולד טבעונית')" class="w-48 bg-white border border-slate-200/80 rounded-2xl p-3 shrink-0 shadow-sm hover:shadow-md transition cursor-pointer">
+                                <div class="w-full h-28 bg-amber-50 rounded-xl flex items-center justify-center text-slate-400 relative overflow-hidden mb-2">
+                                    <span class="text-4xl"><i class="fa-solid fa-cake-candles text-amber-700"></i></span>
+                                    <div class="absolute top-2 left-2 bg-emerald-600 text-white text-[9px] font-black px-2 py-0.5 rounded-full">מצרכים זמינים</div>
+                                </div>
+                                <h4 class="font-bold text-slate-800 text-sm">עוגת שוקולד טבעונית</h4>
+                                <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
+                                    <span>קל</span>
+                                    <span>•</span>
+                                    <span>30 דקות</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- SCREEN 6: SPECIFIC RECIPE PAGE (UX-WF-A1_Recepie.png) -->
+            <div id="screen-recipe-detail" class="page-view flex flex-col h-full hidden overflow-hidden bg-slate-50">
+                <!-- Header -->
+                <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
+                    <div class="flex items-center gap-2">
+                        <button onclick="navigate('recipes')" class="text-slate-600 hover:text-slate-900 p-1"><i class="fa-solid fa-arrow-right text-lg"></i></button>
+                        <h2 class="font-bold text-slate-800 text-lg" id="detail-recipe-title">עוגת שוקולד טבעונית</h2>
+                    </div>
+                    <button id="recipe-fav-btn" onclick="toggleFavorite()" class="w-8 h-8 flex items-center justify-center bg-slate-50 rounded-full border border-slate-200 text-rose-500"><i class="fa-regular fa-heart"></i></button>
+                </div>
+
+                <!-- Recipe detailed view contents -->
+                <div class="flex-1 overflow-y-auto pb-20">
+                    <!-- Hero image representation block -->
+                    <div class="relative h-44 bg-slate-800 text-white flex items-center justify-center overflow-hidden">
+                        <!-- Cross outline representation standard mimicking wireframe cross-box -->
+                        <div class="absolute inset-0 opacity-20 border-2 border-dashed border-slate-500 flex items-center justify-center">
+                            <div class="w-full h-full relative">
+                                <div class="absolute top-0 left-0 w-full h-full border-t border-b transform rotate-12"></div>
+                                <div class="absolute top-0 left-0 w-full h-full border-t border-b transform -rotate-12"></div>
+                            </div>
+                        </div>
+                        <span class="text-6xl text-slate-400 relative z-10"><i class="fa-solid fa-cake-candles"></i></span>
+                        <div class="absolute bottom-3 right-3 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-slate-200">
+                            רמת קושי: קל
+                        </div>
+                    </div>
+
+                    <!-- Descriptions -->
+                    <div class="p-4 space-y-4">
+                        <div class="space-y-1">
+                            <p class="text-xs text-slate-500" id="detail-recipe-desc">
+                                תיאור קצר של עוגה טעימה עם שוקולד, אבל רק מריר כי זה טבעוני וזה גם בלי ביצים, איך זה טעים בכלל.
+                            </p>
+                            <div class="flex gap-4 pt-1 text-xs font-semibold text-slate-600">
+                                <span><i class="fa-solid fa-clock ml-1 text-emerald-600"></i> זמן הכנה: 30 דקות</span>
+                                <span><i class="fa-solid fa-users ml-1 text-emerald-600"></i> 4 סועדים</span>
+                            </div>
+                        </div>
+
+                        <!-- Ingredients Checklist -->
+                        <div class="space-y-3 bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm">
+                            <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                <h3 class="font-extrabold text-slate-800 text-sm">מצרכים</h3>
+                                <button onclick="addAllMissingToCart()" class="text-emerald-700 text-xs font-bold hover:underline">הוסף לרשימה כל מה שחסר</button>
+                            </div>
+                            
+                            <!-- Dynamic checklist generated inside javascript depending on recipe loaded -->
+                            <div id="recipe-ingredients-checklist" class="space-y-2.5">
+                                <!-- Generated by javascript -->
+                            </div>
+                        </div>
+
+                        <!-- Directions instructions matching wireframe lists -->
+                        <div class="space-y-3 bg-white p-4 rounded-2xl border border-slate-200/60 shadow-sm">
+                            <h3 class="font-extrabold text-slate-800 text-sm border-b border-slate-100 pb-2">הוראות הכנה</h3>
+                            
+                            <div class="space-y-4" id="recipe-instructions-list">
+                                <!-- Generated by javascript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom feedback buttons aligned with screen (אהבתי / לא אהבתי) -->
+                <div class="absolute bottom-0 inset-x-0 p-4 bg-white border-t border-slate-100 flex gap-3 z-10 shrink-0">
+                    <button onclick="handleRecipeRating(true)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm btn-active">
+                        <i class="fa-solid fa-thumbs-up"></i>
+                        <span>אהבתי</span>
+                    </button>
+                    <button onclick="handleRecipeRating(false)" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 text-sm btn-active">
+                        <i class="fa-solid fa-thumbs-down"></i>
+                        <span>לא אהבתי</span>
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- SCREEN 7: SHOPPING LIST SCREEN (UX-WF-A1_Recepie.png scroll / Shopping lists) -->
+            <div id="screen-shopping-list" class="page-view flex flex-col h-full hidden overflow-hidden bg-slate-50">
+                <!-- Header -->
+                <div class="bg-white px-4 py-3 border-b border-slate-100 flex justify-between items-center sticky top-0 z-10 shrink-0">
+                    <div class="flex items-center gap-2">
+                        <button onclick="navigate('home')" class="text-slate-600 hover:text-slate-900 p-1"><i class="fa-solid fa-arrow-right text-lg"></i></button>
+                        <h2 class="font-bold text-slate-800 text-lg">רשימת קניות</h2>
+                    </div>
+                    <button onclick="toggleSideMenu()" class="text-slate-600"><i class="fa-solid fa-bars"></i></button>
+                </div>
+
+                <!-- Input area for shopping lists items with custom Autocomplete container -->
+                <div class="bg-white p-4 border-b border-slate-100 flex gap-2 shrink-0 relative z-20">
+                    <div class="flex-1 relative">
+                        <input id="shopping-item-input" type="text" oninput="handleShoppingInput()" onfocus="handleShoppingInput()" placeholder="הוסף לרשימה (למשל: עגבניות, חלב)" class="w-full px-3 py-2.5 bg-slate-100 rounded-xl text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                        
+                        <!-- Autocomplete suggestion box (As seen in UX-WF-A1_Recepie.png scroll / PDF Page 13) -->
+                        <div id="shopping-autocomplete-list" class="absolute right-0 left-0 top-full mt-1.5 bg-white border border-slate-200 rounded-xl shadow-xl max-h-56 overflow-y-auto hidden z-50">
+                            <!-- Populated with elements derived from AUTOCOMPLETE_DATABASE inside script -->
+                        </div>
+                    </div>
+                    <button onclick="addNewShoppingItem()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center btn-active shrink-0">
+                        <i class="fa-solid fa-plus text-base"></i>
+                    </button>
+                </div>
+
+                <!-- Shopping List tabs & recommendations -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-4">
+                    <!-- Active custom user lists -->
+                    <div class="space-y-2.5">
+                        <h3 class="font-extrabold text-slate-800 text-sm px-1">הרשימה שלי</h3>
+                        <div id="shopping-list-container" class="space-y-2">
+                            <!-- Filled dynamically by script -->
+                        </div>
+                    </div>
+
+                    <!-- Recommended items automatically created -->
+                    <div class="space-y-2.5 pt-2">
+                        <h3 class="font-extrabold text-slate-800 text-sm px-1">המלצות קנייה חכמות <span class="text-amber-600 text-xs">(עומד להיגמר!)</span></h3>
+                        <div class="space-y-2" id="smart-shopping-recommendations">
+                            <!-- Populated with elements derived from expiration statuses inside script -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Custom navigation bar on the emulator bottom mimicking standard system indicators -->
+        <div class="bg-white py-3 flex justify-center items-center z-30 border-t border-slate-100 shrink-0">
+            <div class="w-32 h-1 bg-slate-300 rounded-full"></div>
+        </div>
+    </div>
+
+    <script>
+
+        // Default Mock Databases matching exactly screen categories
+        const INITIAL_INVENTORY = [
+            { id: 1, name: "חלב 5%", category: "מוצרי חלב", quantity: 2, unit: "קרטונים", highUse: true, expireStatus: 'warning' },
+            { id: 2, name: "לחמניות", category: "מאפים", quantity: 5, unit: "יחידות", highUse: false, expireStatus: 'good' },
+            { id: 3, name: "סוכר חום", category: "יבשים", quantity: 1, unit: "ק\"ג", highUse: false, expireStatus: 'good' },
+            { id: 4, name: "בוטנים", category: "יבשים", quantity: 200, unit: "גרם", highUse: false, expireStatus: 'good' },
+            { id: 5, name: "גבינה צהובה 5%", category: "מוצרי חלב", quantity: 1, unit: "חבילה", highUse: true, expireStatus: 'warning' },
+            { id: 6, name: "עגבניות שרי", category: "ירקות", quantity: 15, unit: "יחידות", highUse: true, expireStatus: 'expired' },
+            { id: 7, name: "שוקולד מריר", category: "מתוקים", quantity: 3, unit: "חפיסות", highUse: false, expireStatus: 'good' }
+        ];
+
+        const INITIAL_SHOPPING = [
+            { id: 101, name: "קמח", quantity: 3, unit: "כוסות", fromRecipe: "עוגת שוקולד טבעונית" },
+            { id: 102, name: "אבקת קקאו", quantity: 0.5, unit: "כוס", fromRecipe: "עוגת שוקולד טבעונית" }
+        ];
+
+        // Autocomplete library exactly mapping UX-WF-A1 PDF Page 13 input recommendations
+        const AUTOCOMPLETE_DATABASE = [
+            { name: "גבינה צהובה 5%", unit: "חבילה אחת" },
+            { name: "גבינה צהובה ללא לקטוז", unit: "חבילה אחת" },
+            { name: "גבינה צפתית", unit: "חבילה אחת" },
+            { name: "גבינה צרפתית", unit: "חבילה אחת" },
+            { name: "גבינה צהובה 28%", unit: "חבילה אחת" },
+            { name: "גבינה לבנה 5%", unit: "גביע אחד" },
+            { name: "חלב 3%", unit: "קרטון אחד" },
+            { name: "חלב 5%", unit: "2 קרטונים" },
+            { name: "עגבניות", unit: "5 יחידות" },
+            { name: "עגבניות שרי", unit: "מארז אחד" },
+            { name: "קוטג' 5%", unit: "גביע אחד" },
+            { name: "לחמניות", unit: "5 יחידות" },
+            { name: "קמח", unit: "3 כוסות" },
+            { name: "אבקת קקאו", unit: "1/2 כוס" }
+        ];
+
+        const RECIPES_DATABASE = {
+            "עוגת שוקולד טבעונית": {
+                title: "עוגת שוקולד טבעונית",
+                desc: "עוגה רכה, לחה ומנחמת ללא צורך בביצים או מוצרי חלב. מתכון קלאסי מנצח וסופר-מהיר להכנה.",
+                difficulty: "קל",
+                prepTime: "30 דקות",
+                serves: 4,
+                favorite: true,
+                iconClass: "fa-cake-candles",
+                bgColor: "bg-amber-50",
+                textColor: "text-amber-700",
+                ingredients: [
+                    { name: "קמח", qty: "3 כוסות", owned: false },
+                    { name: "אבקת קקאו", qty: "1/2 כוס", owned: false },
+                    { name: "סוכר חום", qty: "2 כוסות", owned: true },
+                    { name: "מלח", qty: "קורט", owned: true },
+                    { name: "סודה לשתייה", qty: "2 כפיות", owned: true },
+                    { name: "מים", qty: "2 כוסות", owned: true },
+                    { name: "שמן", qty: "2/3 כוס", owned: true },
+                    { name: "מיץ לימון או חומץ", qty: "2 כפות", owned: true },
+                    { name: "תמצית וניל", qty: "2 כפיות", owned: true }
+                ],
+                instructions: [
+                    "מערבבים בקערה את הקמח, הקקאו, הסוכר, המלח והסודה לשתייה.",
+                    "מוסיפים מים, שמן, מיץ לימון ותמצית וניל ומערבבים עד לקבלת תערובת אחידה וחלקה.",
+                    "יוצקים לתבנית אפייה עגולה משומנת ואופים בתנור בחום בינוני כ-40 דקות (עד שקיסם יוצא נקי).",
+                    "מניחים לעוגה להתקרר.",
+                    "מערבבים את חומרי הציפוי עד לקבלת מרקם חלק ואחיד ומורחים על העוגה."
+                ]
+            },
+            "נאצוס עם גוואקמולי": {
+                title: "נאצ'וס עם גוואקמולי",
+                desc: "חטיף נאצ'וס פריך מושלם לצד ממרח גוואקמולי עשיר, לימון סחוט ובצל סגול.",
+                difficulty: "קל",
+                prepTime: "15 דקות",
+                serves: 3,
+                favorite: false,
+                iconClass: "fa-pepper-hot",
+                bgColor: "bg-emerald-50",
+                textColor: "text-emerald-600",
+                ingredients: [
+                    { name: "נאצ'וס תירס", qty: "חבילה אחת", owned: true },
+                    { name: "אבוקדו בשל", qty: "2 יחידות", owned: true },
+                    { name: "מיץ לימון", qty: "1 כף", owned: true },
+                    { name: "בצל סגול", qty: "1/2 יחידה", owned: false }
+                ],
+                instructions: [
+                    "מועכים את האבוקדו בקערה בעזרת מזלג.",
+                    "קוצצים דק את הבצל הסגול ומוסיפים לאבוקדו.",
+                    "מתבלים במלח, פלפל ומיץ לימון סחוט טרי.",
+                    "מגישים את הגוואקמולי לצד קערת נאצ'וס תירס פריכים."
+                ]
+            },
+            "חטיף אנרגיה ביתי": {
+                title: "חטיף אנרגיה ביתי",
+                desc: "חטיפי בריאות עשירים בשיבולת שועל, אגוזים ובוטנים ללא אפייה. פתרון אנרגטי נהדר לנשנוש מהיר.",
+                difficulty: "קל",
+                prepTime: "15 דקות",
+                serves: 6,
+                favorite: false,
+                iconClass: "fa-cookie",
+                bgColor: "bg-amber-50",
+                textColor: "text-amber-600",
+                ingredients: [
+                    { name: "שיבולת שועל", qty: "2 כוסות", owned: true },
+                    { name: "דבש או סילאן", qty: "1/2 כוס", owned: true },
+                    { name: "חמאת בוטנים", qty: "1/2 כוס", owned: false },
+                    { name: "בוטנים", qty: "1/2 כוס", owned: true }
+                ],
+                instructions: [
+                    "מערבבים בקערה גדולה את שיבולת השועל והבוטנים.",
+                    "בסיר קטן, מחממים קלות את הדבש וחמאת הבוטנים עד לאיחוד מלא.",
+                    "יוצקים את התערובת הנוזלית על התערובת היבשה ומערבבים היטב.",
+                    "משטחים בתבנית מרופדת בנייר אפייה, מהדקים היטב ומקפיאים לשעה לפני החיתוך לחטיפים."
+                ]
+            },
+            "עוף בתנור": {
+                title: "עוף בתנור פריך",
+                desc: "עוף זהוב ועסיסי מתובל היטב שנאפה בתנור על מצע תפוחי אדמה ובצל.",
+                difficulty: "קל",
+                prepTime: "45 דקות",
+                serves: 4,
+                favorite: false,
+                iconClass: "fa-drumstick-bite",
+                bgColor: "bg-amber-100",
+                textColor: "text-amber-600",
+                ingredients: [
+                    { name: "כרעי עוף", qty: "4 יחידות", owned: true },
+                    { name: "תפוחי אדמה", qty: "4 יחידות", owned: true },
+                    { name: "שמן זית", qty: "3 כפות", owned: true },
+                    { name: "פפריקה מתוקה", qty: "1 כף", owned: true }
+                ],
+                instructions: [
+                    "מחממים תנור ל-200 מעלות.",
+                    "קולפים את תפוחי האדמה וחותכים לקוביות.",
+                    "מתבלים את העוף ותפוחי האדמה בשמן זית, מלח, פלפל ופפריקה.",
+                    "מסדרים בתבנית ואופים כ-45 דקות עד להזהבה מלאה."
+                ]
+            },
+            "אורז עם ירקות": {
+                title: "אורז מוקפץ",
+                desc: "פתרון מושלם לניצול שאריות אורז וירקות במקרר. מנה אסייתית קלילה ובריאה.",
+                difficulty: "קל",
+                prepTime: "20 דקות",
+                serves: 2,
+                favorite: false,
+                iconClass: "fa-bowl-rice",
+                bgColor: "bg-emerald-50",
+                textColor: "text-emerald-600",
+                ingredients: [
+                    { name: "אורז מבושל", qty: "2 כוסות", owned: true },
+                    { name: "ירקות מוקפאים או טריים", qty: "1 כוס", owned: true },
+                    { name: "רוטב סויה", qty: "2 כפות", owned: true },
+                    { name: "שמן שומשום", qty: "1 כפית", owned: true }
+                ],
+                instructions: [
+                    "מחממים מעט שמן במחבת גדולה או ווק.",
+                    "מקפיצים את הירקות במשך כ-5 דקות.",
+                    "מוסיפים את האורז המבושל ומערבבים היטב.",
+                    "מתבלים ברוטב סויה ושמן שומשום ומגישים חם."
+                ]
+            }
+        };
+
+        // Active State
+        let inventory = [...INITIAL_INVENTORY];
+        let shoppingList = [...INITIAL_SHOPPING];
+        let currentScreen = 'home';
+        let currentFilterCategory = 'all';
+        let activeSortOption = 'highuse';
+        let activeRecipe = "עוגת שוקולד טבעונית";
+        let isPantryOnlyMode = true; // matches wireframe state
+
+        // Scanned Mock items stack for Swipe Tinder card validation game
+        let pendingScanItems = [];
+        let completedScannedList = [];
+
+        window.onload = function() {
+            renderInventory();
+            renderShoppingList();
+            renderPantryCounts();
+            
+            // Auto hide splash or setup initial view
+            navigate('home');
+        };
+
+
+        // Screen Navigation Router
+        function navigate(screenId) {
+            currentScreen = screenId;
+            
+            // Hide all pages
+            document.querySelectorAll('.page-view').forEach(p => {
+                p.classList.add('hidden');
+            });
+
+            // Show current page
+            const activePage = document.getElementById(`screen-${screenId}`);
+            if (activePage) {
+                activePage.classList.remove('hidden');
+            }
+
+            // Close menu drawer just in case
+            closeSideMenu();
+
+            // Screen custom init methods
+            if (screenId === 'inventory') {
+                renderInventory();
+            } else if (screenId === 'shopping-list') {
+                renderShoppingList();
+                document.getElementById('shopping-autocomplete-list').classList.add('hidden');
+            } else if (screenId === 'recipes') {
+                renderRecipesFeed();
+            }
+        }
+
+        // Side Menu drawer actions
+        function toggleSideMenu() {
+            const menu = document.getElementById('side-menu');
+            const backdrop = document.getElementById('menu-backdrop');
+            
+            if (menu.classList.contains('translate-x-full')) {
+                menu.classList.remove('translate-x-full');
+                backdrop.classList.remove('hidden');
+                backdrop.classList.add('opacity-100');
+            } else {
+                closeSideMenu();
+            }
+        }
+
+        function closeSideMenu() {
+            const menu = document.getElementById('side-menu');
+            const backdrop = document.getElementById('menu-backdrop');
+            
+            menu.classList.add('translate-x-full');
+            backdrop.classList.add('hidden');
+            backdrop.classList.remove('opacity-100');
+        }
+
+        function showToast(text, duration = 3000) {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toast-text');
+            toastText.innerText = text;
+            
+            toast.classList.remove('-translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.add('-translate-y-20', 'opacity-0');
+                toast.classList.remove('translate-y-0', 'opacity-100');
+            }, duration);
+        }
+
+        function renderPantryCounts() {
+            const count = inventory.reduce((acc, curr) => acc + curr.quantity, 0);
+            document.getElementById('home-inventory-count').innerText = `${count} מוצרים`;
+        }
+
+
+        function generateItemHTML(item) {
+            let badgeMarkup = '';
+            if (item.expireStatus === 'expired') {
+                badgeMarkup = `<span class="bg-rose-100 text-rose-700 text-[10px] font-bold px-2 py-0.5 rounded-full">פג תוקף!</span>`;
+            } else if (item.expireStatus === 'warning') {
+                badgeMarkup = `<span class="bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">עומד לפוג</span>`;
+            }
+
+            return `
+                <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between hover:border-slate-300 transition duration-150 my-1">
+                    <div class="flex items-center gap-3">
+                        <button onclick="deleteInventoryItem(${item.id})" class="text-slate-300 hover:text-rose-500 transition duration-150">
+                            <i class="fa-regular fa-trash-can"></i>
+                        </button>
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+                                <span>${item.name}</span>
+                                ${badgeMarkup}
+                            </h4>
+                            <span class="text-xs text-slate-400 block mt-0.5">${item.category} • ${item.quantity} ${item.unit}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center bg-slate-100 rounded-xl p-0.5 border border-slate-200/40">
+                        <button onclick="updateQuantity(${item.id}, -1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-white hover:text-slate-800 transition active:scale-95"><i class="fa-solid fa-minus text-xs"></i></button>
+                        <span class="w-8 text-center text-xs font-bold text-slate-700">${item.quantity}</span>
+                        <button onclick="updateQuantity(${item.id}, 1)" class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-500 hover:bg-white hover:text-slate-800 transition active:scale-95"><i class="fa-solid fa-plus text-xs"></i></button>
+                    </div>
+                </div>
+            `;
+        }
+
+
+        function renderInventory() {
+            const listContainer = document.getElementById('inventory-list-container');
+            listContainer.innerHTML = '';
+
+            let filteredList = [...inventory];
+
+            // 1. Filter category search logic
+            if (currentFilterCategory !== 'all') {
+                filteredList = filteredList.filter(item => item.category === currentFilterCategory);
+            }
+
+            // 2. Query search input logic
+            const query = document.getElementById('inventory-search').value.trim();
+            if (query) {
+                filteredList = filteredList.filter(item => item.name.includes(query));
+            }
+
+            // 3. Sorting mechanism logic (flat pre-sorting)
+            if (activeSortOption === 'abc') {
+                filteredList.sort((a, b) => a.name.localeCompare(b.name, 'he'));
+            } else if (activeSortOption === 'highuse') {
+                filteredList.sort((a, b) => (b.highUse ? 1 : 0) - (a.highUse ? 1 : 0));
+            } else if (activeSortOption === 'qty') {
+                filteredList.sort((a, b) => b.quantity - a.quantity);
+            } else if (activeSortOption === 'expire') {
+                // Warning/Expired first
+                const priority = { 'expired': 3, 'warning': 2, 'good': 1 };
+                filteredList.sort((a, b) => (priority[b.expireStatus] || 0) - (priority[a.expireStatus] || 0));
+            }
+
+            if (filteredList.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-12 text-slate-400">
+                        <i class="fa-solid fa-cookie-bite text-4xl mb-3 block"></i>
+                        <p class="text-sm">לא נמצאו מוצרים תואמים במלאי</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // 4. Visual Grouping implementation matching UX-WF-A1_Inventory - categories_2.png
+            if (activeSortOption === 'category') {
+                const groups = {};
+                filteredList.forEach(item => {
+                    if (!groups[item.category]) {
+                        groups[item.category] = [];
+                    }
+                    groups[item.category].push(item);
+                });
+
+                const sortedCategories = Object.keys(groups).sort((a, b) => a.localeCompare(b, 'he'));
+
+                sortedCategories.forEach(cat => {
+                    // Category group header template matching wireframe with selection dot
+                    listContainer.innerHTML += `
+                        <div class="flex items-center justify-between pt-5 pb-2 px-1 border-b border-slate-200 mt-2 shrink-0">
+                            <span class="font-extrabold text-slate-800 text-sm">${cat}</span>
+                            <div class="w-5 h-5 rounded-full border border-slate-300 hover:bg-slate-100 transition cursor-pointer flex items-center justify-center bg-white shadow-sm">
+                                <div class="w-2.5 h-2.5 rounded-full bg-slate-300 hover:bg-slate-400 transition"></div>
+                            </div>
+                        </div>
+                    `;
+
+                    groups[cat].forEach(item => {
+                        listContainer.innerHTML += generateItemHTML(item);
+                    });
+                });
+            } else {
+                // Standard flat list output
+                filteredList.forEach(item => {
+                    listContainer.innerHTML += generateItemHTML(item);
+                });
+            }
+        }
+
+        function selectCategoryFilter(cat) {
+            currentFilterCategory = cat;
+            document.querySelectorAll('.category-pill').forEach(pill => {
+                pill.classList.remove('active', 'bg-emerald-600', 'text-white', 'border-emerald-600');
+                pill.classList.add('bg-slate-100', 'text-slate-600', 'border-slate-200');
+            });
+            event.target.classList.add('active', 'bg-emerald-600', 'text-white', 'border-emerald-600');
+            event.target.classList.remove('bg-slate-100', 'text-slate-600', 'border-slate-200');
+            renderInventory();
+        }
+
+        function filterInventory() {
+            renderInventory();
+        }
+
+        function updateQuantity(id, change) {
+            const item = inventory.find(i => i.id === id);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    inventory = inventory.filter(i => i.id !== id);
+                }
+                renderInventory();
+                renderPantryCounts();
+            }
+        }
+
+        function deleteInventoryItem(id) {
+            inventory = inventory.filter(item => item.id !== id);
+            showToast("הפריט הוסר בהצלחה מהמלאי!");
+            renderInventory();
+            renderPantryCounts();
+        }
+
+        function addNewInventoryItem() {
+            const input = document.getElementById('new-item-name');
+            const name = input.value.trim();
+            if (!name) return;
+
+            const newItem = {
+                id: Date.now(),
+                name: name,
+                category: currentFilterCategory === 'all' ? "אחר" : currentFilterCategory,
+                quantity: 1,
+                unit: "יחידה",
+                highUse: false,
+                expireStatus: 'good'
+            };
+
+            inventory.push(newItem);
+            input.value = '';
+            showToast(`נוסף פריט: ${name} אל המקרר`);
+            renderInventory();
+            renderPantryCounts();
+        }
+
+        function openSortingModal() {
+            document.getElementById('sorting-modal').classList.remove('hidden');
+            setTimeout(() => {
+                document.getElementById('sorting-modal').firstElementChild.classList.remove('translate-y-full');
+            }, 50);
+        }
+
+        function closeSortingModal() {
+            document.getElementById('sorting-modal').firstElementChild.classList.add('translate-y-full');
+            setTimeout(() => {
+                document.getElementById('sorting-modal').classList.add('hidden');
+            }, 300);
+        }
+
+        function applySort(option) {
+            activeSortOption = option;
+            
+            // Highlight checkmark visually
+            document.querySelectorAll('#sorting-modal .check-mark').forEach(span => {
+                span.classList.add('hidden');
+            });
+            
+            event.currentTarget.querySelector('.check-mark').classList.remove('hidden');
+            
+            closeSortingModal();
+            renderInventory();
+        }
+
+
+        function startMockScanProcess() {
+            showToast("סורק ומפענח קבלה...");
+            
+            // Mimic scan reading with timeout delay
+            setTimeout(() => {
+                pendingScanItems = [
+                    { name: "חלב 5%", category: "מוצרי חלב", quantity: 2, unit: "קרטונים" },
+                    { name: "לחמניות", category: "מאפים", quantity: 5, unit: "יחידות" },
+                    { name: "סוכר חום", category: "יבשים", quantity: 1, unit: 'ק"ג' },
+                    { name: "בוטנים", category: "יבשים", quantity: 200, unit: "גרם" }
+                ];
+                
+                completedScannedList = [];
+                renderSwipeCardStack();
+                navigate('swipe-verification');
+            }, 1200);
+        }
+
+        function renderSwipeCardStack() {
+            const container = document.getElementById('card-deck-container');
+            container.innerHTML = '';
+
+            if (pendingScanItems.length === 0) {
+                // Done with scanning swipe games, add approved to inventory
+                completedScannedList.forEach(approvedItem => {
+                    const existing = inventory.find(i => i.name === approvedItem.name);
+                    if (existing) {
+                        existing.quantity += approvedItem.quantity;
+                    } else {
+                        inventory.push({
+                            id: Date.now() + Math.random(),
+                            name: approvedItem.name,
+                            category: approvedItem.category,
+                            quantity: approvedItem.quantity,
+                            unit: approvedItem.unit,
+                            highUse: false,
+                            expireStatus: 'good'
+                        });
+                    }
+                });
+
+                showToast("הקבלה פוענחה בהצלחה! הפריטים שאישרת נוספו למלאי");
+                renderInventory();
+                renderPantryCounts();
+                navigate('inventory');
+                return;
+            }
+
+            // Render top item as card
+            const currentItem = pendingScanItems[0];
+            const countText = `פריט ${completedScannedList.length + 1} מתוך ${completedScannedList.length + pendingScanItems.length}`;
+            document.getElementById('swipe-counter').innerText = countText;
+
+            const cardHTML = `
+                <div id="active-swipe-card" class="absolute inset-0 bg-white rounded-3xl border border-slate-200 shadow-xl p-6 flex flex-col justify-between swipe-card">
+                    <div class="space-y-4">
+                        <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto text-xl shadow-inner">
+                            <i class="fa-solid fa-cart-flatbed-suitcase"></i>
+                        </div>
+                        <div class="text-center">
+                            <h3 class="font-extrabold text-slate-800 text-lg">${currentItem.name}</h3>
+                            <p class="text-xs text-slate-400 mt-1">${currentItem.category}</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 text-center">
+                        <span class="text-slate-500 text-xs block mb-1">כמות שזוהתה</span>
+                        <span class="font-extrabold text-slate-800 text-2xl">${currentItem.quantity} ${currentItem.unit}</span>
+                    </div>
+
+                    <p class="text-[11px] text-slate-400 text-center leading-normal">
+                        האם הפריט והכמות נכונים?
+                    </p>
+                </div>
+            `;
+            container.innerHTML = cardHTML;
+
+            // Bind swipe drag event listeners for mouse/touch
+            setupDragGestures();
+        }
+
+
+        function setupDragGestures() {
+            const card = document.getElementById('active-swipe-card');
+            if (!card) return;
+
+            let startX = 0;
+            let currentX = 0;
+            let isDragging = false;
+
+            // Mouse / Touch Event Bindings
+            card.addEventListener('mousedown', startDrag);
+            card.addEventListener('touchstart', startDrag);
+
+            window.addEventListener('mousemove', drag);
+            window.addEventListener('touchmove', drag);
+
+            window.addEventListener('mouseup', endDrag);
+            window.addEventListener('touchend', endDrag);
+
+            function startDrag(e) {
+                isDragging = true;
+                startX = e.clientX || e.touches[0].clientX;
+                card.style.transition = 'none';
+            }
+
+            function drag(e) {
+                if (!isDragging) return;
+                currentX = (e.clientX || (e.touches && e.touches[0].clientX)) - startX;
+                
+                // Tilt rotation based on drag distance
+                const rotation = currentX * 0.08;
+                card.style.transform = `translateX(${currentX}px) rotate(${rotation}deg)`;
+
+                // Color tint card based on approve/reject side
+                if (currentX > 30) {
+                    card.style.backgroundColor = '#ecfdf5'; // Greenish tint
+                } else if (currentX < -30) {
+                    card.style.backgroundColor = '#fff5f5'; // Reddish tint
+                } else {
+                    card.style.backgroundColor = '#ffffff';
+                }
+            }
+
+            function endDrag() {
+                if (!isDragging) return;
+                isDragging = false;
+                card.style.transition = 'transform 0.3s ease, opacity 0.3s ease, background-color 0.3s ease';
+
+                if (currentX > 100) {
+                    // Approved Swipe Right
+                    card.style.transform = 'translateX(300px) rotate(30deg)';
+                    card.style.opacity = '0';
+                    setTimeout(() => handleSwipeAction(true), 150);
+                } else if (currentX < -100) {
+                    // Rejected Swipe Left
+                    card.style.transform = 'translateX(-300px) rotate(-30deg)';
+                    card.style.opacity = '0';
+                    setTimeout(() => handleSwipeAction(false), 150);
+                } else {
+                    // Rebound back to center
+                    card.style.transform = 'none';
+                    card.style.backgroundColor = '#ffffff';
+                }
+                currentX = 0;
+            }
+        }
+
+        function handleSwipeAction(isApproved) {
+            const currentItem = pendingScanItems.shift();
+            
+            if (isApproved) {
+                completedScannedList.push(currentItem);
+                showToast(`אושר: ${currentItem.name}`);
+            } else {
+                showToast(`נדחה: ${currentItem.name}`);
+            }
+
+            // Next card render
+            renderSwipeCardStack();
+        }
+
+
+        function renderShoppingList() {
+            const container = document.getElementById('shopping-list-container');
+            container.innerHTML = '';
+
+            if (shoppingList.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-6 text-slate-400 bg-white rounded-2xl border border-slate-100 p-4">
+                        <p class="text-xs">אין פריטים ברשימת הקניות שלך כרגע.</p>
+                    </div>
+                `;
+            } else {
+                shoppingList.forEach(item => {
+                    const html = `
+                        <div class="bg-white rounded-2xl p-4 border border-slate-200/60 shadow-sm flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <button onclick="deleteShoppingItem(${item.id})" class="text-slate-300 hover:text-rose-500 transition">
+                                    <i class="fa-regular fa-trash-can"></i>
+                                </button>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm">${item.name}</h4>
+                                    ${item.fromRecipe ? `<span class="text-[10px] text-emerald-600 font-bold block mt-0.5"><i class="fa-solid fa-circle-info ml-1"></i>חסר עבור: ${item.fromRecipe}</span>` : ''}
+                                </div>
+                            </div>
+                            <span class="bg-slate-100 text-slate-600 text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200/40">${item.quantity} ${item.unit}</span>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+            }
+
+            // Render smart recommendations
+            const recContainer = document.getElementById('smart-shopping-recommendations');
+            recContainer.innerHTML = '';
+
+            // Derive auto recommendations based on expired/waning pantry items
+            const recommendations = inventory.filter(i => i.expireStatus === 'expired' || i.expireStatus === 'warning');
+
+            if (recommendations.length === 0) {
+                recContainer.innerHTML = `
+                    <div class="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-4 text-center">
+                        <p class="text-xs text-emerald-800 font-semibold leading-relaxed">כל מוצרי הצריכה שלך מעודכנים! אין פריטים שעומדים לפוג כרגע.</p>
+                    </div>
+                `;
+            } else {
+                recommendations.forEach(rec => {
+                    const html = `
+                        <div class="bg-white rounded-2xl p-4 border border-amber-200 shadow-sm flex items-center justify-between">
+                            <div>
+                                <h4 class="font-bold text-slate-800 text-sm">${rec.name}</h4>
+                                <span class="text-[10px] text-amber-600 font-bold block mt-0.5">המלאי הנוכחי עומד להיגמר / פג תוקף!</span>
+                            </div>
+                            <button onclick="addRecToShoppingList('${rec.name}')" class="bg-amber-500 hover:bg-amber-600 text-white font-bold px-3 py-1.5 rounded-xl text-xs flex items-center gap-1 transition btn-active">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>הוסף</span>
+                            </button>
+                        </div>
+                    `;
+                    recContainer.innerHTML += html;
+                });
+            }
+        }
+
+
+        // Handles manual input events for shopping lists suggestion dropdown overlays (PDF Page 13)
+        function handleShoppingInput() {
+            const input = document.getElementById('shopping-item-input');
+            const val = input.value.trim();
+            const dropdown = document.getElementById('shopping-autocomplete-list');
+            
+            if (!val) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            // Filter matching products from database
+            const matches = AUTOCOMPLETE_DATABASE.filter(item => item.name.includes(val));
+
+            if (matches.length === 0) {
+                dropdown.classList.add('hidden');
+                return;
+            }
+
+            dropdown.innerHTML = '';
+            matches.forEach(match => {
+                const row = document.createElement('div');
+                row.className = "px-4 py-3 hover:bg-emerald-50 cursor-pointer text-sm text-slate-700 flex justify-between items-center border-b border-slate-50 last:border-0 transition";
+                row.innerHTML = `
+                    <span class="font-semibold text-slate-800">${match.name}</span>
+                    <span class="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-lg">${match.unit}</span>
+                `;
+                row.onclick = () => {
+                    selectShoppingSuggestion(match.name, match.unit);
+                };
+                dropdown.appendChild(row);
+            });
+
+            dropdown.classList.remove('hidden');
+        }
+
+        function selectShoppingSuggestion(name, unit) {
+            const input = document.getElementById('shopping-item-input');
+            input.value = '';
+            
+            // Hide dropdown
+            document.getElementById('shopping-autocomplete-list').classList.add('hidden');
+            
+            // Add suggested item immediately to shopping stack
+            shoppingList.push({
+                id: Date.now(),
+                name: name,
+                quantity: 1,
+                unit: unit || "יחידה"
+            });
+            
+            showToast(`נוסף לרשימה: ${name}`);
+            renderShoppingList();
+        }
+
+        // Close autocomplete overlay if clicked outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('shopping-autocomplete-list');
+            const input = document.getElementById('shopping-item-input');
+            if (dropdown && !dropdown.contains(e.target) && e.target !== input) {
+                dropdown.classList.add('hidden');
+            }
+        });
+
+        function addNewShoppingItem() {
+            const input = document.getElementById('shopping-item-input');
+            const name = input.value.trim();
+            if (!name) return;
+
+            shoppingList.push({
+                id: Date.now(),
+                name: name,
+                quantity: 1,
+                unit: "יחידה"
+            });
+
+            input.value = '';
+            document.getElementById('shopping-autocomplete-list').classList.add('hidden');
+            showToast(`נוסף לרשימת קניות: ${name}`);
+            renderShoppingList();
+        }
+
+        function addRecToShoppingList(name) {
+            const existing = shoppingList.find(item => item.name === name);
+            if (!existing) {
+                shoppingList.push({
+                    id: Date.now(),
+                    name: name,
+                    quantity: 1,
+                    unit: "מארז"
+                });
+                showToast(`נוסף לרשימה: ${name}`);
+                renderShoppingList();
+            } else {
+                showToast(`הפריט ${name} כבר קיים ברשימה!`);
+            }
+        }
+
+        function deleteShoppingItem(id) {
+            shoppingList = shoppingList.filter(item => item.id !== id);
+            renderShoppingList();
+            showToast("הפריט הוסר בהצלחה");
+        }
+
+
+        function renderRecipesFeed() {
+            const favoritesList = document.getElementById('favorites-recipes-list');
+            const prefCategoryWrapper = document.getElementById('preferences-category-wrapper');
+            favoritesList.innerHTML = '';
+
+            let hasFavorites = false;
+
+            // Search database for favorite entries
+            Object.keys(RECIPES_DATABASE).forEach(key => {
+                const recipe = RECIPES_DATABASE[key];
+                if (recipe.favorite) {
+                    hasFavorites = true;
+                    favoritesList.innerHTML += `
+                        <div onclick="openRecipeDetail('${recipe.title}')" class="w-48 bg-white border border-slate-200/80 rounded-2xl p-3 shrink-0 shadow-sm hover:shadow-md transition cursor-pointer">
+                            <div class="w-full h-28 ${recipe.bgColor || 'bg-slate-100'} rounded-xl flex items-center justify-center text-slate-400 relative overflow-hidden mb-2">
+                                <span class="text-4xl"><i class="fa-solid ${recipe.iconClass || 'fa-utensils'} ${recipe.textColor || 'text-slate-500'}"></i></span>
+                                <div class="absolute top-2 left-2 bg-rose-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-1">
+                                    <i class="fa-solid fa-heart text-[8px]"></i>
+                                    <span>מועדף</span>
+                                </div>
+                            </div>
+                            <h4 class="font-bold text-slate-800 text-sm">${recipe.title}</h4>
+                            <div class="flex items-center gap-2 mt-1 text-[11px] text-slate-500">
+                                <span>${recipe.difficulty || 'קל'}</span>
+                                <span>•</span>
+                                <span>${recipe.prepTime || '30 דקות'}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            // Display placeholder inside Preferences row if no favorites are saved
+            if (!hasFavorites) {
+                favoritesList.innerHTML = `
+                    <div class="w-full bg-white border border-dashed border-slate-200 rounded-2xl p-6 text-center text-slate-400 flex flex-col items-center justify-center">
+                        <i class="fa-regular fa-heart text-2xl mb-1.5 text-slate-300"></i>
+                        <p class="text-xs">אין מתכונים מועדפים עדיין.</p>
+                        <p class="text-[10px] text-slate-400 mt-0.5">סמן לב ❤️ בדף מתכון כדי להוסיף אותו לכאן!</p>
+                    </div>
+                `;
+            }
+        }
+
+        function openRecipeDetail(recipeTitle) {
+            const recipe = RECIPES_DATABASE[recipeTitle];
+            if (!recipe) return;
+
+            activeRecipe = recipeTitle;
+
+            // Fill text elements matching design wireframes
+            document.getElementById('detail-recipe-title').innerText = recipe.title;
+            document.getElementById('detail-recipe-desc').innerText = recipe.desc;
+
+            // Setup favorite heart state
+            const favBtn = document.getElementById('recipe-fav-btn');
+            const icon = favBtn.querySelector('i');
+            if (recipe.favorite) {
+                icon.className = 'fa-solid fa-heart text-rose-500';
+            } else {
+                icon.className = 'fa-regular fa-heart text-slate-500';
+            }
+
+            // Ingredients list generator
+            const ingContainer = document.getElementById('recipe-ingredients-checklist');
+            ingContainer.innerHTML = '';
+            recipe.ingredients.forEach((ing, index) => {
+                // Cross check if item is owned in inventory
+                const isOwned = inventory.some(p => p.name.includes(ing.name));
+                const iconHTML = isOwned 
+                    ? `<i class="fa-solid fa-circle-check text-emerald-500"></i>` 
+                    : `<button onclick="addIngredientToCart('${ing.name}', '${ing.qty}')" class="text-slate-300 hover:text-emerald-600 transition p-1 text-sm"><i class="fa-solid fa-cart-plus"></i></button>`;
+
+                ingContainer.innerHTML += `
+                    <div class="flex items-center justify-between py-2 border-b border-slate-50 last:border-0">
+                        <span class="text-xs font-semibold text-slate-700 ${isOwned ? 'line-through text-slate-400' : ''}">${ing.qty} ${ing.name}</span>
+                        ${iconHTML}
+                    </div>
+                `;
+            });
+
+            // Directions steps list generator
+            const instContainer = document.getElementById('recipe-instructions-list');
+            instContainer.innerHTML = '';
+            recipe.instructions.forEach((inst, idx) => {
+                instContainer.innerHTML += `
+                    <div class="flex gap-3">
+                        <span class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">${idx + 1}</span>
+                        <p class="text-xs text-slate-600 leading-relaxed pt-0.5">${inst}</p>
+                    </div>
+                `;
+            });
+
+            navigate('recipe-detail');
+        }
+
+
+        function addIngredientToCart(name, qty) {
+            const alreadyExists = shoppingList.some(item => item.name === name);
+            if (!alreadyExists) {
+                shoppingList.push({
+                    id: Date.now(),
+                    name: name,
+                    quantity: qty || 1,
+                    unit: "כפי שנדרש",
+                    fromRecipe: activeRecipe
+                });
+                showToast(`נוסף חסר לרשימת הקניות: ${name}`);
+                openRecipeDetail(activeRecipe); // refresh
+            }
+        }
+
+        function addAllMissingToCart() {
+            const recipe = RECIPES_DATABASE[activeRecipe];
+            let count = 0;
+            recipe.ingredients.forEach(ing => {
+                const isOwned = inventory.some(p => p.name.includes(ing.name));
+                const alreadyInCart = shoppingList.some(item => item.name === ing.name);
+                
+                if (!isOwned && !alreadyInCart) {
+                    shoppingList.push({
+                        id: Date.now() + Math.random(),
+                        name: ing.name,
+                        quantity: ing.qty,
+                        unit: "יחידות",
+                        fromRecipe: activeRecipe
+                    });
+                    count++;
+                }
+            });
+
+            if (count > 0) {
+                showToast(`נוספו ${count} פריטים חסרים לרשימת הקניות שלך!`);
+                openRecipeDetail(activeRecipe);
+            } else {
+                showToast(`כבר יש לך את כל המצרכים עבור מתכון זה!`);
+            }
+        }
+
+        function toggleFavorite() {
+            const recipe = RECIPES_DATABASE[activeRecipe];
+            if (!recipe) return;
+
+            const btn = document.getElementById('recipe-fav-btn');
+            const icon = btn.querySelector('i');
+            
+            recipe.favorite = !recipe.favorite;
+
+            if (recipe.favorite) {
+                icon.className = 'fa-solid fa-heart text-rose-500';
+                showToast("המתכון נוסף לקטגוריית העדפות!");
+            } else {
+                icon.className = 'fa-regular fa-heart text-slate-500';
+                showToast("המתכון הוסר מקטגוריית העדפות");
+            }
+
+            renderRecipesFeed(); // Refresh feeds
+        }
+
+        function handleRecipeRating(loved) {
+            if (loved) {
+                RECIPES_DATABASE[activeRecipe].favorite = true;
+                showToast("איזה כיף שאהבת! המתכון יישמר בקטגוריית העדפות");
+            } else {
+                RECIPES_DATABASE[activeRecipe].favorite = false;
+                showToast("נרשם. נציע לך פחות מתכונים דומים בהמשך");
+            }
+            navigate('recipes');
+        }
+
+        function buildMeAMeal() {
+            // Pick a recipe dynamically based on ingredients owned
+            showToast("סורק מלאי מקרר לבניית ארוחה מותאמת...");
+            setTimeout(() => {
+                // Pre-pick the chocolate cake mock matching the preference settings
+                openRecipeDetail('עוגת שוקולד טבעונית');
+            }, 800);
+        }
+
+        function savePreferences() {
+            showToast("העדפות הפרופיל שלך עודכנו בהצלחה!");
+            navigate('recipes');
+        }
+
+        function setRecipePantryMode(isPantryOnly) {
+            isPantryOnlyMode = isPantryOnly;
+            const btnBuy = document.getElementById('mode-buy');
+            const btnPantry = document.getElementById('mode-pantry');
+            
+            if (isPantryOnlyMode) {
+                btnPantry.className = "flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-800 bg-white shadow-md";
+                btnBuy.className = "flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-700 bg-transparent hover:text-slate-900";
+                showToast("מציג מתכונים המבוססים על מלאי המקרר הנוכחי בלבד!");
+            } else {
+                btnBuy.className = "flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-800 bg-white shadow-md";
+                btnPantry.className = "flex-1 text-center py-3.5 rounded-xl transition duration-200 text-slate-700 bg-transparent hover:text-slate-900";
+                showToast("מציג את כל המתכונים, כולל אלו שחסרים עבורם מצרכים");
+            }
+        }
+
+        function getSurpriseRecipe() {
+            const keys = Object.keys(RECIPES_DATABASE);
+            const randomKey = keys[Math.floor(Math.random() * keys.length)];
+            showToast("מגריל מתכון בהפתעה בשבילך...");
+            setTimeout(() => {
+                openRecipeDetail(randomKey);
+            }, 650);
+        }
+    </script>
+</body>
+</html>
+```
