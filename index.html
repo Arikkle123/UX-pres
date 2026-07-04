@@ -138,6 +138,40 @@
             object-position: center;
         }
 
+        .prototype-embed {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            direction: ltr;
+        }
+
+        .prototype-scale-host {
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+
+        .prototype-iframe-shell {
+            width: 420px;
+            height: 880px;
+            transform-origin: top left;
+            border-radius: 48px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.35);
+        }
+
+        .prototype-iframe {
+            width: 420px;
+            height: 880px;
+            border: none;
+            display: block;
+        }
+
+        #slide1 .prototype-embed {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
         #slide21.slide-container {
             padding: 14px 22px;
             position: relative;
@@ -160,32 +194,7 @@
         #slide21 .prototype-embed {
             position: absolute;
             inset: 8px 22px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
             overflow: visible;
-            direction: ltr;
-        }
-
-        #slide21 .prototype-scale-host {
-            flex-shrink: 0;
-            overflow: hidden;
-        }
-
-        #slide21 .prototype-iframe-shell {
-            width: 420px;
-            height: 880px;
-            transform-origin: top left;
-            border-radius: 48px;
-            overflow: hidden;
-            box-shadow: 0 20px 50px -12px rgba(15, 23, 42, 0.35);
-        }
-
-        #slide21 .prototype-iframe {
-            width: 420px;
-            height: 880px;
-            border: none;
-            display: block;
         }
 
         .smartphone-frame {
@@ -300,42 +309,11 @@
                     </div>
                 </div>
 
-                <div class="col-span-5 flex justify-center items-center h-full">
-                    <div class="smartphone-frame">
-                        <div class="bg-[#f8fafc] w-full h-full rounded-[34px] flex flex-col pt-6 overflow-hidden relative">
-                            <!-- In-app UI Representation -->
-                            <div class="px-4 py-2 border-b border-slate-200 flex justify-between items-center bg-white">
-                                <span class="text-xs font-black text-slate-800">מה במקרר</span>
-                                <i class="fa-solid fa-wifi text-xs text-slate-400"></i>
-                            </div>
-                            
-                            <div class="p-3 space-y-2 flex-1">
-                                <div class="bg-white p-2.5 rounded-xl border border-slate-100 flex justify-between items-center shadow-sm">
-                                    <span class="text-xs font-bold text-slate-700">חלב תנובה 3%</span>
-                                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                                </div>
-                                <div class="bg-white p-2.5 rounded-xl border border-slate-100 flex justify-between items-center shadow-sm">
-                                    <span class="text-xs font-bold text-slate-700">גבינת קוטג'</span>
-                                    <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
-                                </div>
-                                <div class="bg-white p-2.5 rounded-xl border border-slate-100 flex justify-between items-center shadow-sm">
-                                    <span class="text-xs font-bold text-slate-700">חזה עוף מופשר</span>
-                                    <span class="w-2.5 h-2.5 rounded-full bg-accent-500"></span>
-                                </div>
-                            </div>
-
-                            <!-- Tinder Swipe Feature Visualizer -->
-                            <div class="swipe-card absolute bottom-6 left-3 right-3 p-3.5 text-center bg-white">
-                                <h4 class="text-xs font-extrabold text-slate-800 mb-1">אישור מלאי חווייתי</h4>
-                                <div class="h-16 bg-slate-50 border border-slate-100 rounded-lg mb-2 flex justify-center items-center text-3xl text-slate-600">
-                                    <i class="fa-solid fa-egg text-amber-500"></i>
-                                </div>
-                                <div class="text-[11px] font-bold text-slate-800">ביצים טריות L (תנובה)</div>
-                                <div class="flex justify-between items-center text-[10px] text-slate-400 mt-2 font-bold px-1">
-                                    <span><i class="fa-solid fa-arrow-left text-slate-300 ml-1"></i>זרוק</span>
-                                    <span class="text-accent-500 animate-bounce"><i class="fa-solid fa-hand-pointer"></i> סוויפ</span>
-                                    <span class="text-emerald-500">במקרר <i class="fa-solid fa-arrow-right text-emerald-300 mr-1"></i></span>
-                                </div>
+                <div class="col-span-5 flex justify-center items-start h-full min-h-0">
+                    <div class="prototype-embed" data-prototype-embed>
+                        <div class="prototype-scale-host">
+                            <div class="prototype-iframe-shell">
+                                <iframe class="prototype-iframe" src="what_to_eat_app.html?embed=1" title="מה במקרר - פרוטוטייפ"></iframe>
                             </div>
                         </div>
                     </div>
@@ -1104,9 +1082,9 @@
                 <h2 class="slide-title">פרוטוטייפ</h2>
                 <p class="text-sm text-slate-500 font-bold -mt-1">האפליקציה לשימוש</p>
             </div>
-            <div class="prototype-embed">
-                <div class="prototype-scale-host" id="prototype-scale-host">
-                    <div class="prototype-iframe-shell" id="prototype-iframe-shell">
+            <div class="prototype-embed" data-prototype-embed>
+                <div class="prototype-scale-host">
+                    <div class="prototype-iframe-shell">
                         <iframe class="prototype-iframe" src="what_to_eat_app.html?embed=1" title="פרוטוטייפ - מה במקרר"></iframe>
                     </div>
                 </div>
@@ -1342,29 +1320,30 @@
             const scale = Math.min(availableWidth / SLIDE_WIDTH, availableHeight / SLIDE_HEIGHT);
 
             scaler.style.transform = `scale(${scale})`;
-            scalePrototypeIframe();
+            scaleAllPrototypeIframes();
         }
 
         const PROTOTYPE_WIDTH = 420;
         const PROTOTYPE_HEIGHT = 880;
 
-        function scalePrototypeIframe() {
-            const embed = document.querySelector('#slide21 .prototype-embed');
-            const host = document.getElementById('prototype-scale-host');
-            const shell = document.getElementById('prototype-iframe-shell');
-            if (!embed || !host || !shell) return;
+        function scaleAllPrototypeIframes() {
+            document.querySelectorAll('[data-prototype-embed]').forEach((embed) => {
+                const host = embed.querySelector('.prototype-scale-host');
+                const shell = embed.querySelector('.prototype-iframe-shell');
+                if (!host || !shell) return;
 
-            const availableWidth = embed.clientWidth;
-            const availableHeight = embed.clientHeight;
-            if (availableWidth === 0 || availableHeight === 0) return;
+                const availableWidth = embed.clientWidth;
+                const availableHeight = embed.clientHeight;
+                if (availableWidth === 0 || availableHeight === 0) return;
 
-            const scale = Math.min(availableWidth / PROTOTYPE_WIDTH, availableHeight / PROTOTYPE_HEIGHT);
-            const scaledWidth = PROTOTYPE_WIDTH * scale;
-            const scaledHeight = PROTOTYPE_HEIGHT * scale;
+                const scale = Math.min(availableWidth / PROTOTYPE_WIDTH, availableHeight / PROTOTYPE_HEIGHT);
+                const scaledWidth = PROTOTYPE_WIDTH * scale;
+                const scaledHeight = PROTOTYPE_HEIGHT * scale;
 
-            host.style.width = `${scaledWidth}px`;
-            host.style.height = `${scaledHeight}px`;
-            shell.style.transform = `scale(${scale})`;
+                host.style.width = `${scaledWidth}px`;
+                host.style.height = `${scaledHeight}px`;
+                shell.style.transform = `scale(${scale})`;
+            });
         }
 
         window.addEventListener('resize', fitPresentationToScreen);
@@ -1401,8 +1380,8 @@
             
             currentSlide = slideNum;
             updateSlideCounterDisplay();
-            if (slideNum === 21) {
-                requestAnimationFrame(scalePrototypeIframe);
+            if (slideNum === 1 || slideNum === 21) {
+                requestAnimationFrame(scaleAllPrototypeIframes);
             }
         }
 
