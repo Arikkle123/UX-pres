@@ -138,6 +138,22 @@
             object-position: center;
         }
 
+        #slide21.slide-container {
+            padding: 18px 24px 14px;
+        }
+
+        #slide21 .slide-title {
+            font-size: 26px;
+            margin-bottom: 6px;
+        }
+
+        #slide21 .wf-diagram {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            object-position: center;
+        }
+
         .prototype-embed {
             display: flex;
             align-items: flex-start;
@@ -172,13 +188,13 @@
             overflow: hidden;
         }
 
-        #slide21.slide-container {
+        #slide22.slide-container {
             padding: 14px 22px;
             position: relative;
             overflow: visible;
         }
 
-        #slide21 .prototype-header {
+        #slide22 .prototype-header {
             position: absolute;
             top: 14px;
             right: 22px;
@@ -186,12 +202,12 @@
             pointer-events: none;
         }
 
-        #slide21 .prototype-header .slide-title {
+        #slide22 .prototype-header .slide-title {
             font-size: 28px;
             margin-bottom: 2px;
         }
 
-        #slide21 .prototype-embed {
+        #slide22 .prototype-embed {
             position: absolute;
             inset: 8px 22px;
             overflow: visible;
@@ -1076,8 +1092,17 @@
             </div>
         </div>
 
-        <!-- SLIDE 21: PROTOTYPE -->
+        <!-- SLIDE 21: MANUAL WIREFRAMES -->
         <div class="slide-container slide-hidden" id="slide21">
+            <h2 class="slide-title">אב-טיפוס ידני – מסכי האפליקציה (Wireframes)</h2>
+            <p class="text-sm text-slate-500 text-right -mt-1 mb-2">פרוטוטייפ ראשוני שעוצב ידנית לפני הפיתוח האינטראקטיבי</p>
+            <div class="flex-grow min-h-0 flex items-center justify-center">
+                <img class="wf-diagram" src="UX-WF-B1.png" alt="אב-טיפוס ידני – כל מסכי האפליקציה">
+            </div>
+        </div>
+
+        <!-- SLIDE 22: INTERACTIVE PROTOTYPE -->
+        <div class="slide-container slide-hidden" id="slide22">
             <div class="prototype-header text-right">
                 <h2 class="slide-title">פרוטוטייפ</h2>
                 <p class="text-sm text-slate-500 font-bold -mt-1">האפליקציה לשימוש</p>
@@ -1092,7 +1117,7 @@
         </div>
 
         <!-- SLIDE 23: SPECIFICATION PROBLEMS AND SOLUTIONS -->
-        <div class="slide-container slide-hidden" id="slide22">
+        <div class="slide-container slide-hidden" id="slide23">
             <h2 class="slide-title">בעיות אפיון ופתרונן - היבטים פסיכולוגיים ב-UX</h2>
             <div class="flex flex-col justify-center flex-grow">
                 <div class="grid grid-cols-3 gap-6">
@@ -1140,7 +1165,7 @@
         </div>
 
         <!-- SLIDE 24: Q&A -->
-        <div class="slide-container slide-hidden" id="slide23">
+        <div class="slide-container slide-hidden" id="slide24">
             <div class="flex flex-col justify-center items-center h-full text-center max-w-[900px] mx-auto space-y-8">
                 <div>
                     <h2 class="text-6xl font-black text-slate-900 leading-tight">תודה על ההקשבה!</h2>
@@ -1214,7 +1239,7 @@
     <!-- Slide System and Excel Integration Script -->
     <script>
         let currentSlide = 1;
-        const totalSlides = 23; 
+        const totalSlides = 24; 
         
         document.getElementById('total-slides-count').innerText = totalSlides;
         document.getElementById('slide-index-counter').max = totalSlides;
@@ -1380,7 +1405,7 @@
             
             currentSlide = slideNum;
             updateSlideCounterDisplay();
-            if (slideNum === 1 || slideNum === 21) {
+            if (slideNum === 1 || slideNum === 22) {
                 requestAnimationFrame(scaleAllPrototypeIframes);
             }
         }
