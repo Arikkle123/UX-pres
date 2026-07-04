@@ -338,18 +338,18 @@
                 </div>
 
                 <!-- Simulation body -->
-                <div class="flex-1 overflow-y-auto no-scrollbar p-4 pb-6 relative bg-slate-900 text-white space-y-4">
+                <div class="flex-1 flex flex-col p-4 pb-5 relative bg-slate-900 text-white min-h-0">
                     
                     <!-- Scan Screen simulation with guides -->
-                    <div class="w-full border border-slate-700 rounded-3xl relative flex flex-col items-center justify-center p-4 bg-slate-950/40 shadow-inner overflow-hidden min-h-[240px]">
+                    <div class="w-full flex-1 border border-slate-700 rounded-3xl relative flex flex-col items-center justify-center p-4 bg-slate-950/40 shadow-inner overflow-hidden min-h-0 mb-4">
                         <!-- Camera mock corners -->
-                        <div class="absolute top-6 left-6 w-8 h-8 border-t-4 border-l-4 border-emerald-500 rounded-tl-lg"></div>
-                        <div class="absolute top-6 right-6 w-8 h-8 border-t-4 border-r-4 border-emerald-500 rounded-tr-lg"></div>
-                        <div class="absolute bottom-6 left-6 w-8 h-8 border-b-4 border-l-4 border-emerald-500 rounded-bl-lg"></div>
-                        <div class="absolute bottom-6 right-6 w-8 h-8 border-b-4 border-r-4 border-emerald-500 rounded-br-lg"></div>
+                        <div class="absolute top-8 left-8 w-10 h-10 border-t-4 border-l-4 border-emerald-500 rounded-tl-lg"></div>
+                        <div class="absolute top-8 right-8 w-10 h-10 border-t-4 border-r-4 border-emerald-500 rounded-tr-lg"></div>
+                        <div class="absolute bottom-8 left-8 w-10 h-10 border-b-4 border-l-4 border-emerald-500 rounded-bl-lg"></div>
+                        <div class="absolute bottom-8 right-8 w-10 h-10 border-b-4 border-r-4 border-emerald-500 rounded-br-lg"></div>
 
                         <!-- Mock scanned paper -->
-                        <div id="scan-receipt-mock" class="w-40 p-3 bg-white text-slate-800 rounded-lg shadow-2xl opacity-75 transform rotate-2 flex flex-col gap-2 relative">
+                        <div id="scan-receipt-mock" class="w-44 p-4 bg-white text-slate-800 rounded-lg shadow-2xl opacity-75 transform rotate-2 flex flex-col gap-2 relative">
                             <div class="border-b border-dashed border-slate-300 pb-1.5 text-center">
                                 <span class="text-[9px] font-bold block uppercase tracking-widest text-slate-500">Supermarket IL</span>
                                 <span class="text-[7px] text-slate-400 block">04/07/2026</span>
@@ -381,62 +381,44 @@
                         </div>
 
                         <!-- Pulse overlay text -->
-                        <div class="absolute bottom-8 text-center">
-                            <span class="text-[11px] bg-black/65 px-3 py-1.5 rounded-full backdrop-blur-sm border border-slate-800 tracking-wide inline-block animate-pulse text-slate-200">
+                        <div class="absolute bottom-12 text-center">
+                            <span class="text-xs bg-black/65 px-3 py-1.5 rounded-full backdrop-blur-sm border border-slate-800 tracking-wide inline-block animate-pulse text-slate-200">
                                 סורק קבלה ומצליב עם מאגר CHP...
                             </span>
                         </div>
                     </div>
 
                     <!-- Primary: camera scan -->
-                    <button type="button" onclick="startMockScanProcess()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-2xl shadow-lg hover:bg-emerald-500 active:scale-98 transition btn-active flex items-center justify-center gap-2">
+                    <button type="button" onclick="startMockScanProcess()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-2xl shadow-lg hover:bg-emerald-500 active:scale-98 transition btn-active flex items-center justify-center gap-2 shrink-0">
                         <i class="fa-solid fa-camera"></i>
                         <span>סרוק קבלה מהסופרמרקט</span>
                     </button>
 
-                    <div class="flex items-center gap-3 text-slate-500 text-xs font-bold">
+                    <div class="flex items-center gap-3 text-slate-500 text-xs font-bold my-3 shrink-0">
                         <span class="flex-1 h-px bg-slate-700"></span>
                         <span>או</span>
                         <span class="flex-1 h-px bg-slate-700"></span>
                     </div>
 
-                    <!-- Alternate receipt intake options -->
-                    <div class="space-y-2.5">
-                        <input id="receipt-file-input" type="file" accept=".pdf,image/*" class="hidden" onchange="handleReceiptFileUpload(event)">
+                    <input id="receipt-file-input" type="file" accept=".pdf,image/*" class="hidden" onchange="handleReceiptFileUpload(event)">
 
-                        <button type="button" onclick="triggerReceiptFileUpload()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white rounded-2xl p-3.5 flex items-center gap-3 transition btn-active text-right">
-                            <span class="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center shrink-0"><i class="fa-solid fa-file-arrow-up text-emerald-400"></i></span>
-                            <span class="flex-1 min-w-0">
-                                <span class="block text-sm font-bold">העלאת קובץ קבלה</span>
-                                <span class="block text-[11px] text-slate-400 mt-0.5">PDF או תמונה מהגלריה</span>
-                            </span>
-                            <i class="fa-solid fa-chevron-left text-slate-500 text-xs shrink-0"></i>
+                    <!-- Compact alternate options -->
+                    <div class="flex gap-2 shrink-0">
+                        <button type="button" id="scan-alt-btn-file" onclick="toggleScanAltOption('file')" class="scan-alt-btn flex-1 flex flex-col items-center justify-center gap-1 py-2.5 px-1 rounded-xl border border-slate-600 bg-slate-800 hover:bg-slate-700 transition btn-active">
+                            <i class="fa-solid fa-file-arrow-up text-emerald-400 text-sm"></i>
+                            <span class="text-[10px] font-bold leading-tight text-center">העלאת קובץ</span>
                         </button>
-
-                        <div class="w-full bg-slate-800 border border-slate-600 text-white rounded-2xl p-3.5 flex items-start gap-3 text-right">
-                            <span class="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-envelope text-sky-400"></i></span>
-                            <div class="flex-1 min-w-0">
-                                <span class="block text-sm font-bold">העבר קבלה במייל</span>
-                                <span class="block text-[11px] text-slate-400 mt-0.5 leading-relaxed">העבר את הקבלה למייל האישי שלך — המערכת תסרוק אותה אוטומטית:</span>
-                                <button type="button" onclick="copyReceiptEmail()" class="mt-2 w-full bg-slate-900/80 border border-slate-600 rounded-xl px-3 py-2 flex items-center justify-between gap-2 hover:border-emerald-500/50 transition">
-                                    <span id="user-receipt-email" class="text-xs font-bold text-emerald-300 truncate" dir="ltr">OferD_2@mabamekarer.com</span>
-                                    <span class="text-[10px] text-slate-400 shrink-0"><i class="fa-regular fa-copy ml-1"></i>העתק</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="w-full bg-slate-800 border border-slate-600 text-white rounded-2xl p-3.5 flex items-start gap-3 text-right">
-                            <span class="w-10 h-10 rounded-xl bg-slate-700 flex items-center justify-center shrink-0 mt-0.5"><i class="fa-solid fa-comment-sms text-violet-400"></i></span>
-                            <div class="flex-1 min-w-0">
-                                <span class="block text-sm font-bold">העבר קבלה ב-SMS</span>
-                                <span class="block text-[11px] text-slate-400 mt-0.5 leading-relaxed">העבר קבלה שהתקבלה בסמס למספר הבא מהטלפון שלך:</span>
-                                <button type="button" onclick="copyReceiptSms()" class="mt-2 w-full bg-slate-900/80 border border-slate-600 rounded-xl px-3 py-2 flex items-center justify-between gap-2 hover:border-emerald-500/50 transition">
-                                    <span id="user-receipt-sms" class="text-xs font-bold text-emerald-300" dir="ltr">050-3339993</span>
-                                    <span class="text-[10px] text-slate-400 shrink-0"><i class="fa-regular fa-copy ml-1"></i>העתק</span>
-                                </button>
-                            </div>
-                        </div>
+                        <button type="button" id="scan-alt-btn-email" onclick="toggleScanAltOption('email')" class="scan-alt-btn flex-1 flex flex-col items-center justify-center gap-1 py-2.5 px-1 rounded-xl border border-slate-600 bg-slate-800 hover:bg-slate-700 transition btn-active">
+                            <i class="fa-solid fa-envelope text-sky-400 text-sm"></i>
+                            <span class="text-[10px] font-bold leading-tight text-center">במייל</span>
+                        </button>
+                        <button type="button" id="scan-alt-btn-sms" onclick="toggleScanAltOption('sms')" class="scan-alt-btn flex-1 flex flex-col items-center justify-center gap-1 py-2.5 px-1 rounded-xl border border-slate-600 bg-slate-800 hover:bg-slate-700 transition btn-active">
+                            <i class="fa-solid fa-comment-sms text-violet-400 text-sm"></i>
+                            <span class="text-[10px] font-bold leading-tight text-center">ב-SMS</span>
+                        </button>
                     </div>
+
+                    <div id="scan-alt-detail" class="hidden mt-2.5 bg-slate-800 border border-slate-600 rounded-2xl p-3.5 text-right shrink-0"></div>
                 </div>
             </div>
 
@@ -1166,6 +1148,8 @@
                     const recipeMiniToggle = document.getElementById('recipe-mode-toggle-mini');
                     if (recipesScroll) recipesScroll.scrollTop = 0;
                     if (recipeMiniToggle) recipeMiniToggle.classList.add('hidden');
+                } else if (screenId === 'scan-info') {
+                    resetScanAltOptions();
                 }
             } catch (err) {
                 console.warn(err);
@@ -1530,6 +1514,77 @@
         function triggerReceiptFileUpload() {
             const input = document.getElementById('receipt-file-input');
             if (input) input.click();
+        }
+
+        let activeScanAltOption = null;
+
+        function syncScanAltButtons() {
+            ['file', 'email', 'sms'].forEach((key) => {
+                const btn = document.getElementById(`scan-alt-btn-${key}`);
+                if (!btn) return;
+                const isActive = activeScanAltOption === key;
+                btn.classList.toggle('border-emerald-500', isActive);
+                btn.classList.toggle('bg-slate-700', isActive);
+                btn.classList.toggle('ring-1', isActive);
+                btn.classList.toggle('ring-emerald-500/40', isActive);
+            });
+        }
+
+        function renderScanAltDetail(option) {
+            const detail = document.getElementById('scan-alt-detail');
+            if (!detail) return;
+
+            if (option === 'file') {
+                detail.innerHTML = `
+                    <p class="text-[11px] text-slate-400 leading-relaxed mb-3">העלה קובץ PDF או תמונת קבלה מהגלריה — המערכת תפענח אותו אוטומטית.</p>
+                    <button type="button" onclick="triggerReceiptFileUpload()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition btn-active flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-arrow-up"></i>
+                        <span>בחר קובץ קבלה</span>
+                    </button>
+                `;
+            } else if (option === 'email') {
+                detail.innerHTML = `
+                    <p class="text-[11px] text-slate-400 leading-relaxed mb-2">העבר את הקבלה למייל האישי שלך — המערכת תסרוק אותה אוטומטית:</p>
+                    <button type="button" onclick="copyReceiptEmail()" class="w-full bg-slate-900/80 border border-slate-600 rounded-xl px-3 py-2 flex items-center justify-between gap-2 hover:border-emerald-500/50 transition">
+                        <span class="text-xs font-bold text-emerald-300 truncate" dir="ltr">${USER_RECEIPT_EMAIL}</span>
+                        <span class="text-[10px] text-slate-400 shrink-0"><i class="fa-regular fa-copy ml-1"></i>העתק</span>
+                    </button>
+                `;
+            } else if (option === 'sms') {
+                detail.innerHTML = `
+                    <p class="text-[11px] text-slate-400 leading-relaxed mb-2">העבר קבלה שהתקבלה ב-SMS למספר הבא מהטלפון שלך — תיעודף לפי מספר השולח:</p>
+                    <button type="button" onclick="copyReceiptSms()" class="w-full bg-slate-900/80 border border-slate-600 rounded-xl px-3 py-2 flex items-center justify-between gap-2 hover:border-emerald-500/50 transition">
+                        <span class="text-xs font-bold text-emerald-300" dir="ltr">${USER_RECEIPT_SMS}</span>
+                        <span class="text-[10px] text-slate-400 shrink-0"><i class="fa-regular fa-copy ml-1"></i>העתק</span>
+                    </button>
+                `;
+            }
+        }
+
+        function toggleScanAltOption(option) {
+            const detail = document.getElementById('scan-alt-detail');
+            if (!detail) return;
+
+            if (activeScanAltOption === option) {
+                activeScanAltOption = null;
+                detail.classList.add('hidden');
+                detail.innerHTML = '';
+            } else {
+                activeScanAltOption = option;
+                renderScanAltDetail(option);
+                detail.classList.remove('hidden');
+            }
+            syncScanAltButtons();
+        }
+
+        function resetScanAltOptions() {
+            activeScanAltOption = null;
+            const detail = document.getElementById('scan-alt-detail');
+            if (detail) {
+                detail.classList.add('hidden');
+                detail.innerHTML = '';
+            }
+            syncScanAltButtons();
         }
 
         function handleReceiptFileUpload(event) {
